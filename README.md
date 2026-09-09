@@ -1,50 +1,56 @@
-# 📚 Gestion Papa — Suivi des élèves (cours particuliers)
+# Gestion Ayachi
 
-Application **100 % hors-ligne** pour gérer les élèves de papa : inscription avec photo,
-groupes & emploi du temps, présences, paiements mensuels, notes, et **fiche élève imprimable (PDF)**.
+Petite application de gestion pour les cours particuliers de M. Ayachi.
+Elle tourne entièrement hors-ligne sur son PC Windows : pas de compte, pas d'internet,
+pas d'abonnement. On ouvre, on travaille, on ferme, tout est enregistré.
 
-## Stack
-- **Vite + React + TypeScript** (interface en français, gros boutons)
-- **SQLite via sql.js** en mode web/offline — même schéma repris sous **Tauri v2** (`src-tauri/`, `tauri-plugin-sql`, base `gestion.db`)
-- Photos compressées (JPEG 400px) stockées dans la base → **un seul fichier**, sauvegarde en 1 clic
+## Ce qu'elle fait
 
-## 🖥️ Pour papa (sans terminal, sans internet)
+- **Élèves** : fiche par élève avec photo, téléphone, parent, groupe, remarques. Recherche instantanée.
+- **Groupes** : les groupes de cours avec matière, jour et heure.
+- **Présences** : l'appel en deux clics (groupe + date), avec compteurs présents/absents.
+- **Paiements** : suivi mois par mois, montants, payé/impayé, et la liste des relances sur l'accueil.
+- **Notes** : évaluations et moyenne automatique par élève.
+- **Fiche élève** : une page A4 propre par élève (infos + photo + résumé + signatures) à imprimer ou garder en PDF.
+- **Sauvegarde** : un bouton pour exporter toute la base, un autre pour la restaurer.
 
-1. Copier **`Gestion-Papa-Portable.exe`** sur son PC (clé USB) — aucune installation.
-2. Double-cliquer → l'appli s'ouvre. C'est tout.
-3. (Option) Installer avec **`Gestion Papa Setup 0.1.0.exe`** → crée une icône sur le Bureau.
+## Installer sur le PC de M. Ayachi
 
-Quotidien : ouvrir, travailler, fermer — **tout s'enregistre tout seul**.
-Bouton **💾 Sauvegarde** en haut = copie de sécurité à garder sur clé USB.
+Le plus simple : aller dans **Releases** (colonne de droite sur GitHub), télécharger
+`Gestion-Ayachi-Portable.exe`, le poser où on veut (Bureau, Documents, clé USB) et double-cliquer.
+Aucune installation demandée.
 
-## 🗄️ Où est la base de données ?
+Il existe aussi `Gestion Ayachi Setup 0.2.0.exe` qui installe proprement le programme
+avec une icône sur le Bureau.
 
-- **Version appli (.exe)** : fichier `gestion.db` dans
-  `C:\Users\<Nom>\AppData\Roaming\Gestion Papa\gestion.db`
-  (tout dedans : élèves, photos, présences, paiements, notes).
-- **Version navigateur (dev)** : stockage local du navigateur + export `.db` via Sauvegarde.
+Au quotidien il n'y a rien à retenir : les données s'enregistrent toutes seules à chaque
+modification. De temps en temps, un clic sur **Sauvegarde** en haut de l'écran pour mettre
+une copie de côté (clé USB conseillée).
 
-## Démarrer en dev
+## Où sont les données
+
+Tout est dans un seul fichier SQLite :
+
+```
+C:\Users\<Nom>\AppData\Roaming\Gestion Ayachi\gestion.db
+```
+
+Élèves, photos (compressées automatiquement), présences, paiements, notes : tout est dedans.
+Copier ce fichier, c'est sauvegarder l'année entière.
+
+## Pour développer
+
 ```bash
 npm install
-npm run dev      # http://localhost:1420
+npm run dev        # http://localhost:1420
 ```
 
-## Construire l'appli Windows (.exe)
+Construire l'exécutable Windows :
+
 ```bash
-npm run build                       # site statique -> dist/
-npx electron-builder --win portable nsis   # Gestion-Papa-Portable.exe + Setup
+npm run build
+npx electron-builder --win portable nsis
 ```
-`Lancer-Gestion-Papa.bat` ouvre le portable d'un double-clic.
 
-## Passer sous Tauri (.exe Windows)
-1. Installer Rust + MSVC Build Tools + WebView2
-2. `npm install @tauri-apps/cli tauri-plugin-sql`
-3. `npm run tauri dev` / `npm run tauri build` → installeur NSIS
-
-## Sauvegarde
-Bouton **💾 Sauvegarde** (export `.db`) / **📥 Restaurer** dans la barre du haut.
-Les données web persistent aussi automatiquement dans le navigateur (localStorage).
-
-## Schéma SQLite
-`groups • students (photo base64) • attendance • payments • grades` — voir `src/lib/db.ts`.
+Technique : React + TypeScript + Vite, SQLite via sql.js (même schéma prévu pour
+tauri-plugin-sql, voir `src-tauri/`), empaqueté avec Electron. Icônes Lucide.
