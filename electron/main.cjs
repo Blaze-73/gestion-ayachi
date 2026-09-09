@@ -1,4 +1,4 @@
-// Gestion Papa — processus principal Electron.
+// Gestion Ayachi — processus principal Electron.
 // Fenetre unique, 100 % offline. En dev : http://localhost:1420, en prod : dist/.
 const { app, BrowserWindow, ipcMain, shell } = require('electron')
 const path = require('node:path')
@@ -11,7 +11,7 @@ const isDev = !app.isPackaged
 
 function createWindow() {
   const win = new BrowserWindow({
-    title: 'Gestion Papa — Suivi des élèves',
+    title: 'Gestion Ayachi — Suivi des élèves',
     width: 1200,
     height: 800,
     minWidth: 900,

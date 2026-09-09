@@ -1,3 +1,4 @@
+import { Pencil, Plus, Printer, Trash2, UserPlus, X } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import {
   addStudent, deleteStudent, fileToPhotoDataUrl, getStudent,
@@ -71,8 +72,8 @@ export default function Students() {
         <div className="overlay" onClick={() => setFicheId(null)}>
           <div className="overlay-box" onClick={(e) => e.stopPropagation()}>
             <div className="row no-print" style={{ marginBottom: 12 }}>
-              <button className="primary" onClick={() => window.print()}>🖨️ Imprimer / PDF</button>
-              <button onClick={() => setFicheId(null)}>Fermer ✖</button>
+              <button className="primary" onClick={() => window.print()}><Printer size={16} className="btn-ico" />Imprimer / PDF</button>
+              <button onClick={() => setFicheId(null)}><X size={16} className="btn-ico" />Fermer</button>
             </div>
             <FicheEleve studentId={ficheId} />
           </div>
@@ -80,7 +81,7 @@ export default function Students() {
       )}
 
       <div className="panel">
-        <h2>{editing ? `Modifier : ${editing.prenom} ${editing.nom}` : '➕ Nouvel élève'}</h2>
+        <h2>{editing ? `Modifier : ${editing.prenom} ${editing.nom}` : <><Plus size={18} className="btn-ico" />Nouvel élève</>}</h2>
         <div className="grid2">
           <div><label>Nom *</label><input value={form.nom} onChange={(e) => set('nom', e.target.value)} placeholder="Ex : Benali" /></div>
           <div><label>Prénom</label><input value={form.prenom} onChange={(e) => set('prenom', e.target.value)} placeholder="Ex : Yasmine" /></div>
@@ -107,7 +108,7 @@ export default function Students() {
         </div>
         {form.photo && <div style={{ marginTop: 8 }}><img src={form.photo} className="avatar big" alt="" /></div>}
         <div className="row" style={{ marginTop: 12 }}>
-          <button className="primary" onClick={save}>{editing ? 'Enregistrer' : 'Ajouter l’élève'}</button>
+          <button className="primary" onClick={save}>{editing ? 'Enregistrer' : <><UserPlus size={16} className="btn-ico" />Ajouter l'élève</>}</button>
           {editing && <button onClick={() => { setEditing(null); setForm(EMPTY) }}>Annuler</button>}
         </div>
       </div>
@@ -115,7 +116,7 @@ export default function Students() {
       <div className="panel">
         <div className="row" style={{ justifyContent: 'space-between' }}>
           <h2>Élèves ({students.length})</h2>
-          <input className="search" placeholder="🔍 Rechercher nom, prénom, tél…" value={q} onChange={(e) => setQ(e.target.value)} />
+          <input className="search" placeholder="Rechercher nom, prénom, tél…" value={q} onChange={(e) => setQ(e.target.value)} />
         </div>
         <table>
           <thead><tr><th>Photo</th><th>Nom</th><th>Groupe</th><th>Tél parent</th><th>Actions</th></tr></thead>
@@ -128,9 +129,9 @@ export default function Students() {
                 <td>{s.parent_tel || s.tel || '—'}</td>
                 <td>
                   <div className="row">
-                    <button className="small" onClick={() => setFicheId(s.id)}>🖨️ Fiche</button>
-                    <button className="small" onClick={() => edit(s)}>Modifier</button>
-                    <button className="small danger" onClick={() => remove(s)}>Supprimer</button>
+                    <button className="small" onClick={() => setFicheId(s.id)}><Printer size={14} className="btn-ico" />Fiche</button>
+                    <button className="small" onClick={() => edit(s)}><Pencil size={14} className="btn-ico" />Modifier</button>
+                    <button className="small danger" onClick={() => remove(s)}><Trash2 size={14} className="btn-ico" />Supprimer</button>
                   </div>
                 </td>
               </tr>

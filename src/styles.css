@@ -54,6 +54,12 @@ body {
   color: #fff;
   border-color: var(--primary);
 }
+.tabs button, .topbar button, .topbar label, .panel button {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+}
+.btn-ico { flex-shrink: 0; }
 main { padding: 16px 20px 40px; max-width: 1100px; margin: 0 auto; }
 
 .cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 12px; margin-bottom: 16px; }

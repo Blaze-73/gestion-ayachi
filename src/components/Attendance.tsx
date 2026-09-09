@@ -1,3 +1,4 @@
+import { Check, CheckCheck, X } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import { attendanceForDate, listGroups, markAttendance, studentsByGroup, todayISO } from '../lib/db'
 import type { Group, Student } from '../lib/types'
@@ -31,7 +32,7 @@ export default function Attendance() {
 
   return (
     <div className="panel">
-      <h2>✅❌ Présences</h2>
+      <h2>Présences</h2>
       <div className="row">
         <div style={{ minWidth: 220 }}>
           <label>Groupe</label>
@@ -46,8 +47,8 @@ export default function Attendance() {
         </div>
         {students.length > 0 && (
           <>
-            <button className="small" onClick={() => markAll('present')}>Tous présents</button>
-            <button className="small" onClick={() => markAll('absent')}>Tous absents</button>
+            <button className="small" onClick={() => markAll('present')}><CheckCheck size={14} className="btn-ico" />Tous présents</button>
+            <button className="small" onClick={() => markAll('absent')}><X size={14} className="btn-ico" />Tous absents</button>
           </>
         )}
       </div>
@@ -66,8 +67,8 @@ export default function Attendance() {
               </td>
               <td>
                 <div className="row">
-                  <button className="small" onClick={() => mark(s.id, 'present')}>✅ Présent</button>
-                  <button className="small" onClick={() => mark(s.id, 'absent')}>❌ Absent</button>
+                  <button className="small" onClick={() => mark(s.id, 'present')}><Check size={14} className="btn-ico" />Présent</button>
+                  <button className="small" onClick={() => mark(s.id, 'absent')}><X size={14} className="btn-ico" />Absent</button>
                 </div>
               </td>
             </tr>

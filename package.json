@@ -1,8 +1,8 @@
 {
-  "name": "gestion-papa",
-  "productName": "Gestion Papa",
-  "version": "0.1.0",
-  "description": "Suivi des eleves pour cours particuliers — 100 % hors-ligne",
+  "name": "gestion-ayachi",
+  "productName": "Gestion Ayachi",
+  "version": "0.2.0",
+  "description": "Suivi des eleves de M. Ayachi — cours particuliers, 100 % hors-ligne",
   "author": "Blaze-73",
   "type": "module",
   "main": "electron/main.cjs",
@@ -15,6 +15,7 @@
     "dist": "npm run build && electron-builder --win portable nsis"
   },
   "dependencies": {
+    "lucide-react": "^1.43.0",
     "react": "^19.2.8",
     "react-dom": "^19.2.8",
     "sql.js": "^1.14.2"
@@ -32,21 +33,28 @@
     "vite": "^8.2.2"
   },
   "build": {
-    "appId": "com.blaze73.gestion-papa",
-    "productName": "Gestion Papa",
-    "files": ["dist/**", "electron/**", "package.json"],
+    "appId": "com.blaze73.gestion-ayachi",
+    "productName": "Gestion Ayachi",
+    "files": [
+      "dist/**",
+      "electron/**",
+      "package.json"
+    ],
     "win": {
-      "target": ["portable", "nsis"]
+      "target": [
+        "portable",
+        "nsis"
+      ]
     },
     "nsis": {
       "oneClick": true,
       "perMachine": false,
       "createDesktopShortcut": true,
       "createStartMenuShortcut": true,
-      "shortcutName": "Gestion Papa"
+      "shortcutName": "Gestion Ayachi"
     },
     "portable": {
-      "artifactName": "Gestion-Papa-Portable.exe"
+      "artifactName": "Gestion-Ayachi-Portable.exe"
     }
   }
 }

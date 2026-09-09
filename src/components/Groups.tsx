@@ -1,3 +1,4 @@
+import { Pencil, Plus, Trash2 } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import { addGroup, deleteGroup, listGroups, updateGroup } from '../lib/db'
 import type { Group } from '../lib/types'
@@ -25,7 +26,7 @@ export default function Groups() {
   return (
     <div>
       <div className="panel">
-        <h2>{editing ? `Modifier : ${editing.nom}` : '➕ Nouveau groupe'}</h2>
+        <h2>{editing ? `Modifier : ${editing.nom}` : <><Plus size={18} className="btn-ico" />Nouveau groupe</>}</h2>
         <div className="grid2">
           <div><label>Nom du groupe *</label><input value={nom} onChange={(e) => setNom(e.target.value)} placeholder="Ex : Groupe Maths Sam" /></div>
           <div><label>Matière</label><input value={matiere} onChange={(e) => setMatiere(e.target.value)} placeholder="Ex : Maths" /></div>
@@ -53,8 +54,8 @@ export default function Groups() {
                 <td>{g.jour || '—'}</td><td>{g.heure || '—'}</td>
                 <td>
                   <div className="row">
-                    <button className="small" onClick={() => { setEditing(g); setNom(g.nom); setMatiere(g.matiere); setJour(g.jour || 'Samedi'); setHeure(g.heure) }}>Modifier</button>
-                    <button className="small danger" onClick={() => { if (confirm(`Supprimer ${g.nom} ?`)) { deleteGroup(g.id); refresh() } }}>Supprimer</button>
+                    <button className="small" onClick={() => { setEditing(g); setNom(g.nom); setMatiere(g.matiere); setJour(g.jour || 'Samedi'); setHeure(g.heure) }}><Pencil size={14} className="btn-ico" />Modifier</button>
+                    <button className="small danger" onClick={() => { if (confirm(`Supprimer ${g.nom} ?`)) { deleteGroup(g.id); refresh() } }}><Trash2 size={14} className="btn-ico" />Supprimer</button>
                   </div>
                 </td>
               </tr>

@@ -1,3 +1,4 @@
+import { Save } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import { listStudents, monthISO, paymentsForMonth, setPayment, todayISO } from '../lib/db'
 import type { Student } from '../lib/types'
@@ -33,7 +34,7 @@ export default function Payments() {
   return (
     <div className="panel">
       <div className="row" style={{ justifyContent: 'space-between' }}>
-        <h2>💰 Paiements mensuels</h2>
+        <h2>Paiements mensuels</h2>
         <div><label>Mois</label><input type="month" value={mois} onChange={(e) => setMois(e.target.value)} /></div>
       </div>
       <p className="muted">Encaissé : <strong>{totalPaye} DA</strong> / Attendu : <strong>{totalDu} DA</strong></p>
@@ -52,7 +53,7 @@ export default function Payments() {
                   <option value="paye">Payé</option>
                 </select>
               </td>
-              <td><button className="small primary" onClick={() => save(s)}>💾</button></td>
+              <td><button className="small primary" onClick={() => save(s)}><Save size={14} className="btn-ico" /></button></td>
             </tr>
           ))}
         </tbody>

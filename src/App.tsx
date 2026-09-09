@@ -1,19 +1,24 @@
+import {
+  BookOpenText, ClipboardCheck, FolderUp, GraduationCap, Home,
+  ListChecks, NotebookPen, Save, TriangleAlert, UserPlus, Users, Wallet,
+  type LucideIcon,
+} from 'lucide-react'
 import { useEffect, useState } from 'react'
 import Attendance from './components/Attendance'
 import Grades from './components/Grades'
 import Groups from './components/Groups'
 import Payments from './components/Payments'
 import Students from './components/Students'
-import { countStudents, exportBinary, getDb, importBinary, listStudents, monthISO, unpaidCount } from './lib/db'
+import { countStudents, exportBinary, getDb, importBinary, listStudents, monthISO, paymentsForMonth, unpaidCount } from './lib/db'
 import type { TabKey } from './lib/types'
 
-const TABS: { key: TabKey; label: string }[] = [
-  { key: 'dashboard', label: '🏠 Accueil' },
-  { key: 'eleves', label: '👨‍🎓 Élèves' },
-  { key: 'groupes', label: '👥 Groupes' },
-  { key: 'presences', label: '✅ Présences' },
-  { key: 'paiements', label: '💰 Paiements' },
-  { key: 'notes', label: '📝 Notes' },
+const TABS: { key: TabKey; label: string; Icon: LucideIcon }[] = [
+  { key: 'dashboard', label: 'Accueil', Icon: Home },
+  { key: 'eleves', label: 'Élèves', Icon: GraduationCap },
+  { key: 'groupes', label: 'Groupes', Icon: Users },
+  { key: 'presences', label: 'Présences', Icon: ClipboardCheck },
+  { key: 'paiements', label: 'Paiements', Icon: Wallet },
+  { key: 'notes', label: 'Notes', Icon: NotebookPen },
 ]
 
 export default function App() {
@@ -50,7 +55,7 @@ export default function App() {
     const blob = new Blob([data.buffer as ArrayBuffer], { type: 'application/x-sqlite3' })
     const a = document.createElement('a')
     a.href = URL.createObjectURL(blob)
-    a.download = `gestion-papa-${new Date().toISOString().slice(0, 10)}.db`
+    a.download = `gestion-ayachi-${new Date().toISOString().slice(0, 10)}.db`
     a.click()
     URL.revokeObjectURL(a.href)
   }
@@ -65,23 +70,24 @@ export default function App() {
   return (
     <>
       <div className="topbar">
+        <BookOpenText size={26} color="var(--primary)" />
         <div>
-          <h1>📚 Gestion Papa</h1>
+          <h1>Gestion Ayachi</h1>
           <div className="sub">Suivi des élèves — 100 % hors-ligne, données sur ce PC</div>
         </div>
         <div style={{ marginLeft: 'auto' }} className="row no-print">
-          <button className="small" onClick={backup}>💾 Sauvegarde</button>
+          <button className="small" onClick={backup}><Save size={15} className="btn-ico" />Sauvegarde</button>
           <label className="small" style={{ border: '1px solid var(--line)', borderRadius: 10, padding: '6px 10px', cursor: 'pointer' }}>
-            📥 Restaurer
+            <FolderUp size={15} className="btn-ico" />Restaurer
             <input type="file" accept=".db,.sqlite,.sqlite3" hidden onChange={(e) => void restore(e.target.files?.[0])} />
           </label>
         </div>
       </div>
 
       <nav className="tabs">
-        {TABS.map((t) => (
-          <button key={t.key} className={tab === t.key ? 'active' : ''} onClick={() => setTab(t.key)}>
-            {t.label}
+        {TABS.map(({ key, label, Icon }) => (
+          <button key={key} className={tab === key ? 'active' : ''} onClick={() => setTab(key)}>
+            <Icon size={17} className="btn-ico" />{label}
           </button>
         ))}
       </nav>
@@ -94,20 +100,20 @@ export default function App() {
               <div className="stat"><div className="n">{impayes}</div><div className="l">Impayés ({monthISO()})</div></div>
             </div>
             <div className="panel">
-              <h2>Bienvenue 👋</h2>
+              <h2>Bienvenue</h2>
               <p className="muted">
                 1. Ajoutez vos <strong>groupes</strong> (jour + heure). 2. Inscrivez les <strong>élèves</strong> avec photo.
                 3. Faites l'appel dans <strong>présences</strong>, suivez l'argent dans <strong>paiements</strong>,
-                les résultats dans <strong>notes</strong>. Bouton <strong>🖨️ Fiche</strong> pour imprimer le dossier d'un élève.
+                les résultats dans <strong>notes</strong>. Le bouton <strong>Fiche</strong> imprime le dossier d'un élève.
               </p>
               <div className="row">
-                <button className="primary" onClick={() => setTab('eleves')}>Ajouter un élève</button>
-                <button onClick={() => setTab('presences')}>Faire l'appel</button>
+                <button className="primary" onClick={() => setTab('eleves')}><UserPlus size={16} className="btn-ico" />Ajouter un élève</button>
+                <button onClick={() => setTab('presences')}><ListChecks size={16} className="btn-ico" />Faire l'appel</button>
               </div>
             </div>
             {impayeList.length > 0 && (
               <div className="panel">
-                <h2>⚠️ À relancer ({monthISO()})</h2>
+                <h2><TriangleAlert size={18} className="btn-ico" />À relancer ({monthISO()})</h2>
                 <p>{impayeList.join(' • ')}</p>
               </div>
             )}
@@ -123,7 +129,6 @@ export default function App() {
   )
 }
 
-import { paymentsForMonth } from './lib/db'
 function paymentsForMonthOf(studentId: number, mois: string): string | undefined {
   return paymentsForMonth(mois).find((p) => p.student_id === studentId)?.statut
 }
