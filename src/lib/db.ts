@@ -1,12 +1,36 @@
 // Couche SQLite — Gestion Papa
-// Mode web/offline : sql.js (SQLite compile en WASM, 100 % local).
+// - Sous Electron (appli de papa) : sql.js + fichier gestion.db dans les donnees de l'app.
+// - Dans le navigateur : sql.js + localStorage (secours).
 // Meme schema repris tel quel sous Tauri (tauri-plugin-sql, sqlite:gestion.db).
-// Persistance web : export binaire -> localStorage apres chaque ecriture.
 
 import initSqlJs, { type Database } from 'sql.js'
 import type { AttendanceRow, GradeRow, Group, PaymentRow, Student } from './types'
 
+declare global {
+  interface Window {
+    papaAPI?: {
+      isDesktop: boolean
+      loadDb: () => Promise<number[] | null>
+      saveDb: (bytes: number[]) => Promise<boolean>
+      dbPath: () => Promise<string>
+    }
+  }
+}
+
 const STORAGE_KEY = 'gestion-papa-sqlite-v1'
+const isDesktop = () => typeof window !== 'undefined' && !!window.papaAPI?.isDesktop
+
+/** Ou se trouve la base ? (affiche dans la console + utilisable pour le support) */
+export async function dbLocation(): Promise<string> {
+  if (isDesktop()) {
+    try {
+      return await window.papaAPI!.dbPath()
+    } catch {
+      return 'dossier de l’application'
+    }
+  }
+  return 'stockage local du navigateur (cle ' + STORAGE_KEY + ')'
+}
 
 let db: Database | null = null
 let saveTimer: ReturnType<typeof setTimeout> | null = null
@@ -66,11 +90,26 @@ function persistNow() {
   if (!db) return
   try {
     const data = db.export()
+    if (isDesktop()) {
+      // Ecriture directe dans gestion.db — sans bloquer l'interface
+      void window.papaAPI!.saveDb(Array.from(data))
+      return
+    }
     let bin = ''
     for (let i = 0; i < data.length; i++) bin += String.fromCharCode(data[i])
     localStorage.setItem(STORAGE_KEY, btoa(bin))
   } catch {
     // stockage plein (photos) : on ignore, l'export manuel reste possible
+  }
+}
+
+async function restoreFromDesktop(): Promise<Uint8Array | undefined> {
+  try {
+    const arr = await window.papaAPI!.loadDb()
+    if (!arr || arr.length === 0) return undefined
+    return new Uint8Array(arr)
+  } catch {
+    return undefined
   }
 }
 
@@ -90,7 +129,7 @@ function restore(): Uint8Array | undefined {
 export async function getDb(): Promise<Database> {
   if (db) return db
   const SQL = await initSqlJs({ locateFile: () => 'sql-wasm.wasm' })
-  const saved = restore()
+  const saved = isDesktop() ? await restoreFromDesktop() : restore()
   db = saved ? new SQL.Database(saved) : new SQL.Database()
   db.exec(SCHEMA)
   db.exec('PRAGMA foreign_keys = ON;')

@@ -1,13 +1,18 @@
 {
   "name": "gestion-papa",
-  "private": true,
-  "version": "0.0.0",
+  "productName": "Gestion Papa",
+  "version": "0.1.0",
+  "description": "Suivi des eleves pour cours particuliers — 100 % hors-ligne",
+  "author": "Blaze-73",
   "type": "module",
+  "main": "electron/main.cjs",
   "scripts": {
     "dev": "vite",
     "build": "tsc -b && vite build",
     "lint": "oxlint",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "electron:dev": "electron .",
+    "dist": "npm run build && electron-builder --win portable nsis"
   },
   "dependencies": {
     "react": "^19.2.8",
@@ -20,8 +25,28 @@
     "@types/react-dom": "^19.2.4",
     "@types/sql.js": "^1.4.11",
     "@vitejs/plugin-react": "^6.1.0",
+    "electron": "^44.3.0",
+    "electron-builder": "^26.15.3",
     "oxlint": "^1.79.0",
     "typescript": "~6.0.2",
     "vite": "^8.2.2"
+  },
+  "build": {
+    "appId": "com.blaze73.gestion-papa",
+    "productName": "Gestion Papa",
+    "files": ["dist/**", "electron/**", "package.json"],
+    "win": {
+      "target": ["portable", "nsis"]
+    },
+    "nsis": {
+      "oneClick": true,
+      "perMachine": false,
+      "createDesktopShortcut": true,
+      "createStartMenuShortcut": true,
+      "shortcutName": "Gestion Papa"
+    },
+    "portable": {
+      "artifactName": "Gestion-Papa-Portable.exe"
+    }
   }
 }
