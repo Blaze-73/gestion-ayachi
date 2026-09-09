@@ -26,6 +26,14 @@ export default function Students() {
   useEffect(refresh, []) // eslint-disable-line react-hooks/exhaustive-deps
   useEffect(() => { setStudents(listStudents(q)) }, [q])
 
+  // Fermer la fiche avec Echap
+  useEffect(() => {
+    if (ficheId === null) return
+    const onKey = (e: KeyboardEvent) => { if (e.key === 'Escape') setFicheId(null) }
+    window.addEventListener('keydown', onKey)
+    return () => window.removeEventListener('keydown', onKey)
+  }, [ficheId])
+
   const groupName = (id: number | null) => groups.find((g) => g.id === id)?.nom ?? '—'
 
   const onPhoto = async (f: File | undefined) => {
@@ -60,12 +68,14 @@ export default function Students() {
   return (
     <div>
       {ficheId !== null && (
-        <div className="panel">
-          <div className="row no-print" style={{ marginBottom: 12 }}>
-            <button className="primary" onClick={() => window.print()}>🖨️ Imprimer / PDF</button>
-            <button onClick={() => setFicheId(null)}>Fermer</button>
+        <div className="overlay" onClick={() => setFicheId(null)}>
+          <div className="overlay-box" onClick={(e) => e.stopPropagation()}>
+            <div className="row no-print" style={{ marginBottom: 12 }}>
+              <button className="primary" onClick={() => window.print()}>🖨️ Imprimer / PDF</button>
+              <button onClick={() => setFicheId(null)}>Fermer ✖</button>
+            </div>
+            <FicheEleve studentId={ficheId} />
           </div>
-          <FicheEleve studentId={ficheId} />
         </div>
       )}
 

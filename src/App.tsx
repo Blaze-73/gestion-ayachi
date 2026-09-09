@@ -1,6 +1,5 @@
 import { useEffect, useState } from 'react'
 import Attendance from './components/Attendance'
-import FicheEleve from './components/FicheEleve'
 import Grades from './components/Grades'
 import Groups from './components/Groups'
 import Payments from './components/Payments'
@@ -119,8 +118,6 @@ export default function App() {
         {tab === 'presences' && <Attendance />}
         {tab === 'paiements' && <Payments />}
         {tab === 'notes' && <Grades />}
-        {/* FicheEleve est aussi rendue dans l'onglet Élèves ; exporte pour tests d'impression */}
-        <span style={{ display: 'none' }}><FicheEleve studentId={-1} /></span>
       </main>
     </>
   )
