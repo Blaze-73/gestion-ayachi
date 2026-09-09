@@ -60,6 +60,23 @@ ipcMain.handle('db:save', (_evt, bytes) => {
 
 ipcMain.handle('db:path', () => dbPath())
 
+// --- WASM SQLite : le renderer ne peut pas faire fetch() en file://,
+// donc le processus principal lit le fichier et envoie les octets ---
+ipcMain.handle('db:wasm', () => {
+  const candidates = [
+    path.join(__dirname, '..', 'dist', 'sql-wasm.wasm'),
+    path.join(__dirname, '..', 'public', 'sql-wasm.wasm'),
+  ]
+  for (const p of candidates) {
+    try {
+      if (fs.existsSync(p)) return Array.from(fs.readFileSync(p))
+    } catch {
+      // essayer le suivant
+    }
+  }
+  throw new Error('sql-wasm.wasm introuvable')
+})
+
 app.whenReady().then(() => {
   createWindow()
   app.on('activate', () => {

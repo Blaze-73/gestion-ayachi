@@ -13,6 +13,7 @@ declare global {
       loadDb: () => Promise<number[] | null>
       saveDb: (bytes: number[]) => Promise<boolean>
       dbPath: () => Promise<string>
+      loadWasm: () => Promise<number[]>
     }
   }
 }
@@ -128,7 +129,14 @@ function restore(): Uint8Array | undefined {
 
 export async function getDb(): Promise<Database> {
   if (db) return db
-  const SQL = await initSqlJs({ locateFile: () => 'sql-wasm.wasm' })
+  let SQL
+  if (isDesktop()) {
+    // Sous Electron (file://) fetch() est bloque : on passe les octets lus par le main.
+    const bytes = await window.papaAPI!.loadWasm()
+    SQL = await initSqlJs({ wasmBinary: new Uint8Array(bytes).buffer as ArrayBuffer })
+  } else {
+    SQL = await initSqlJs({ locateFile: () => 'sql-wasm.wasm' })
+  }
   const saved = isDesktop() ? await restoreFromDesktop() : restore()
   db = saved ? new SQL.Database(saved) : new SQL.Database()
   db.exec(SCHEMA)

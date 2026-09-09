@@ -55,6 +55,9 @@
     },
     "portable": {
       "artifactName": "Gestion-Ayachi-Portable.exe"
+    },
+    "directories": {
+      "output": "release"
     }
   }
 }

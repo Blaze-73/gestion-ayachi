@@ -6,4 +6,5 @@ contextBridge.exposeInMainWorld('papaAPI', {
   loadDb: () => ipcRenderer.invoke('db:load'),
   saveDb: (bytes) => ipcRenderer.invoke('db:save', bytes),
   dbPath: () => ipcRenderer.invoke('db:path'),
+  loadWasm: () => ipcRenderer.invoke('db:wasm'),
 })
