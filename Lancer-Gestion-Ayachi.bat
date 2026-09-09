@@ -6,10 +6,10 @@ if exist "Gestion-Ayachi-Portable.exe" (
   start "" "Gestion-Ayachi-Portable.exe"
   exit /b 0
 )
-if exist "dist\Gestion-Ayachi-Portable.exe" (
-  start "" "dist\Gestion-Ayachi-Portable.exe"
+if exist "release\win-unpacked\Gestion Ayachi.exe" (
+  start "" "release\win-unpacked\Gestion Ayachi.exe"
   exit /b 0
 )
-echo [Gestion Ayachi] Fichier Gestion-Ayachi-Portable.exe introuvable.
+echo [Gestion Ayachi] Application introuvable.
 echo Copiez-le a cote de ce fichier, puis double-cliquez a nouveau.
 pause
