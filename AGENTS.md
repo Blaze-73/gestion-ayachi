@@ -9,8 +9,8 @@ Application Windows 100 % hors-ligne pour M. Ayachi : gestion de ses élèves de
 particuliers (fiches + photos, groupes, présences, paiements, notes, fiche A4 imprimable).
 Interface en français, gros boutons, pensée pour quelqu'un qui ne touche jamais au terminal.
 
-- Repo GitHub : `Blaze-73/gestion-papa` (renommage en `gestion-ayachi` prévu, pas encore fait)
-- Dossier local actuel : `C:\Users\hp\Desktop\gestion-papa` (nom de dossier conservé tel quel)
+- Repo GitHub : `Blaze-73/gestion-ayachi`
+- Dossier local : `C:\Users\hp\Desktop\gestion-ayachi`
 - Commits signés : `Blaze-73 <kachkachmouataz@gmail.com>` — le push passe par le credential
   Windows déjà enregistré (Git Credential Manager), aucun token à demander.
 
@@ -68,5 +68,5 @@ Français partout. Icônes **Lucide** (`lucide-react`), jamais d'emojis dans l'i
 - Il teste lui-même l'exe et rapporte les bugs (ex : bouton Fiche invisible car la fiche
   s'ouvrait hors écran → corrigé en popup overlay + Echap + print CSS dédié).
 - Réponses courtes, directes. Quand un outil traîne, le dire au lieu de relancer en boucle.
-- Reste à faire : renommer le repo GitHub en `gestion-ayachi`, publier la Release v0.2.0
-  avec le portable (nécessite un token avec scope repo pour l'API Releases).
+- Reste à faire : publier la Release v0.2.0 avec le portable
+  (nécessite un token avec scope repo pour l'API Releases).
