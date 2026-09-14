@@ -8,7 +8,7 @@ const JOURS = ['Samedi', 'Dimanche', 'Lundi', 'Mardi', 'Mercredi', 'Jeudi', 'Ven
 export default function Groups() {
   const [groups, setGroups] = useState<Group[]>([])
   const [nom, setNom] = useState('')
-  const [matiere, setMatiere] = useState('')
+  const [matiere, setMatiere] = useState('Français')
   const [jour, setJour] = useState('Samedi')
   const [heure, setHeure] = useState('')
   const [editing, setEditing] = useState<Group | null>(null)
@@ -20,7 +20,7 @@ export default function Groups() {
     if (!nom.trim()) { alert('Nom du groupe obligatoire.'); return }
     if (editing) updateGroup({ ...editing, nom, matiere, jour, heure })
     else addGroup({ nom, matiere, jour, heure })
-    setNom(''); setMatiere(''); setHeure(''); setEditing(null); refresh()
+    setNom(''); setMatiere('Français'); setHeure(''); setEditing(null); refresh()
   }
 
   return (
@@ -28,8 +28,8 @@ export default function Groups() {
       <div className="panel">
         <h2>{editing ? `Modifier : ${editing.nom}` : <><Plus size={18} className="btn-ico" />Nouveau groupe</>}</h2>
         <div className="grid2">
-          <div><label>Nom du groupe *</label><input value={nom} onChange={(e) => setNom(e.target.value)} placeholder="Ex : Groupe Maths Sam" /></div>
-          <div><label>Matière</label><input value={matiere} onChange={(e) => setMatiere(e.target.value)} placeholder="Ex : Maths" /></div>
+          <div><label>Nom du groupe *</label><input value={nom} onChange={(e) => setNom(e.target.value)} placeholder="Ex : Groupe Samedi 10h" /></div>
+          <div><label>Matière</label><input value={matiere} onChange={(e) => setMatiere(e.target.value)} placeholder="Français" /></div>
           <div>
             <label>Jour</label>
             <select value={jour} onChange={(e) => setJour(e.target.value)}>
@@ -40,7 +40,7 @@ export default function Groups() {
         </div>
         <div className="row" style={{ marginTop: 12 }}>
           <button className="primary" onClick={save}>{editing ? 'Enregistrer' : 'Ajouter le groupe'}</button>
-          {editing && <button onClick={() => { setEditing(null); setNom(''); setMatiere(''); setHeure('') }}>Annuler</button>}
+          {editing && <button onClick={() => { setEditing(null); setNom(''); setMatiere('Français'); setHeure('') }}>Annuler</button>}
         </div>
       </div>
       <div className="panel">
