@@ -83,8 +83,35 @@ CREATE TABLE IF NOT EXISTS grades (
 `
 
 function persistSoon() {
+  // Sous Electron on écrit tout de suite : si on attend 150 ms et que
+  // papa ferme la fenêtre vite, la dernière modif est perdue.
+  if (isDesktop()) {
+    persistNow()
+    return
+  }
   if (saveTimer) clearTimeout(saveTimer)
   saveTimer = setTimeout(persistNow, 150)
+}
+
+/** Force l'écriture immédiate (appelé à la fermeture : on ne peut pas attendre). */
+function flushSync() {
+  if (saveTimer) {
+    clearTimeout(saveTimer)
+    saveTimer = null
+  }
+  persistNow()
+}
+
+let flushHooked = false
+function hookFlushOnClose() {
+  if (flushHooked || typeof window === 'undefined') return
+  flushHooked = true
+  // pagehide couvre la fermeture Electron + onglet navigateur ; beforeunload en renfort.
+  window.addEventListener('pagehide', flushSync)
+  window.addEventListener('beforeunload', flushSync)
+  document.addEventListener('visibilitychange', () => {
+    if (document.visibilityState === 'hidden') flushSync()
+  })
 }
 
 function persistNow() {
@@ -141,6 +168,7 @@ export async function getDb(): Promise<Database> {
   db = saved ? new SQL.Database(saved) : new SQL.Database()
   db.exec(SCHEMA)
   db.exec('PRAGMA foreign_keys = ON;')
+  hookFlushOnClose()
   return db
 }
 
