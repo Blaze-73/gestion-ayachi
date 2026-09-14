@@ -1,5 +1,5 @@
-import { Save } from 'lucide-react'
-import { useEffect, useState } from 'react'
+import { Check, Save } from 'lucide-react'
+import { useEffect, useRef, useState } from 'react'
 import { listStudents, monthISO, paymentsForMonth, setPayment, todayISO } from '../lib/db'
 import type { Student } from '../lib/types'
 
@@ -7,6 +7,11 @@ export default function Payments() {
   const [mois, setMois] = useState(monthISO())
   const [students, setStudents] = useState<Student[]>([])
   const [rows, setRows] = useState<Record<number, { montant: number; statut: 'paye' | 'impaye' }>>({})
+  const [dirty, setDirty] = useState<Record<number, boolean>>({})
+  const [justSaved, setJustSaved] = useState<number | null>(null)
+  const flashTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
+
+  useEffect(() => () => { if (flashTimer.current) clearTimeout(flashTimer.current) }, [])
 
   const refresh = () => {
     setStudents(listStudents(''))
@@ -14,18 +19,26 @@ export default function Payments() {
     const m: Record<number, { montant: number; statut: 'paye' | 'impaye' }> = {}
     for (const p of existing) m[p.student_id] = { montant: p.montant, statut: p.statut }
     setRows(m)
+    setDirty({})
   }
   useEffect(refresh, []) // eslint-disable-line react-hooks/exhaustive-deps
   useEffect(refresh, [mois]) // eslint-disable-line react-hooks/exhaustive-deps
 
   const row = (id: number) => rows[id] ?? { montant: 0, statut: 'impaye' as const }
-  const edit = (id: number, patch: Partial<{ montant: number; statut: 'paye' | 'impaye' }>) =>
+  const edit = (id: number, patch: Partial<{ montant: number; statut: 'paye' | 'impaye' }>) => {
     setRows((r) => ({ ...r, [id]: { ...row(id), ...patch } }))
+    setDirty((d) => ({ ...d, [id]: true }))
+    if (justSaved === id) setJustSaved(null)
+  }
 
   const save = (s: Student) => {
     const r = row(s.id)
     setPayment(s.id, mois, Number(r.montant) || 0, r.statut, r.statut === 'paye' ? todayISO() : '')
     refresh()
+    setDirty((d) => ({ ...d, [s.id]: false }))
+    setJustSaved(s.id)
+    if (flashTimer.current) clearTimeout(flashTimer.current)
+    flashTimer.current = setTimeout(() => setJustSaved(null), 1600)
   }
 
   const totalDu = students.reduce((t, s) => t + (Number(row(s.id).montant) || 0), 0)
@@ -41,8 +54,10 @@ export default function Payments() {
       <table>
         <thead><tr><th>Élève</th><th>Montant (DA)</th><th>Statut</th><th>Enregistrer</th></tr></thead>
         <tbody>
-          {students.map((s) => (
-            <tr key={s.id}>
+          {students.map((s) => {
+            const saved = justSaved === s.id
+            return (
+            <tr key={s.id} className={saved ? 'row-saved' : ''}>
               <td><strong>{s.prenom} {s.nom}</strong></td>
               <td style={{ maxWidth: 140 }}>
                 <input type="number" min={0} value={row(s.id).montant} onChange={(e) => edit(s.id, { montant: Number(e.target.value) })} />
@@ -53,9 +68,19 @@ export default function Payments() {
                   <option value="paye">Payé</option>
                 </select>
               </td>
-              <td><button className="small primary" onClick={() => save(s)}><Save size={14} className="btn-ico" /></button></td>
+              <td>
+                <button
+                  className={saved ? 'small saved save-btn' : dirty[s.id] ? 'small primary save-btn' : 'small save-btn'}
+                  onClick={() => save(s)}
+                >
+                  {saved
+                    ? <><Check size={14} className="btn-ico" />Enregistré !</>
+                    : <><Save size={14} className="btn-ico" />Enregistrer{dirty[s.id] ? ' *' : ''}</>}
+                </button>
+              </td>
             </tr>
-          ))}
+            )
+          })}
         </tbody>
       </table>
       {students.length === 0 && <p className="muted">Ajoutez d'abord des élèves dans l'onglet Élèves.</p>}

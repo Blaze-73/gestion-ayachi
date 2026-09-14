@@ -118,6 +118,19 @@ th { color: var(--muted); font-weight: 600; font-size: 12px; text-transform: upp
 .dateselect { display: grid; grid-template-columns: 0.9fr 1.4fr 1fr; gap: 8px; }
 .dateselect select { font-size: 16px; padding: 12px 10px; cursor: pointer; }
 .date-actions { display: flex; gap: 8px; margin-top: 6px; }
+
+/* Retour visuel d'enregistrement (page paiements) */
+.save-btn { min-width: 132px; justify-content: center; }
+button.saved { background: var(--green); border-color: var(--green); color: #fff; animation: save-pop 0.45s ease; }
+tr.row-saved td { background: #f0fdf4; }
+@keyframes save-pop {
+  0% { transform: scale(0.92); }
+  50% { transform: scale(1.06); }
+  100% { transform: scale(1); }
+}
+@media (prefers-reduced-motion: reduce) {
+  button.saved { animation: none; }
+}
 .avatar { width: 44px; height: 44px; border-radius: 50%; object-fit: cover; background: var(--line); }
 .avatar.big { width: 110px; height: 130px; border-radius: 10px; }
 .badge { display: inline-block; padding: 3px 10px; border-radius: 20px; font-size: 12px; }
