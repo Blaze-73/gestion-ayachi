@@ -5,6 +5,7 @@ import {
   listGroups, listStudents, todayISO, updateStudent,
 } from '../lib/db'
 import type { Group, Student } from '../lib/types'
+import DateSelect from './DateSelect'
 import FicheEleve from './FicheEleve'
 
 const EMPTY: Omit<Student, 'id'> = {
@@ -85,8 +86,23 @@ export default function Students() {
         <div className="grid2">
           <div><label>Nom *</label><input value={form.nom} onChange={(e) => set('nom', e.target.value)} placeholder="Ex : Benali" /></div>
           <div><label>Prénom</label><input value={form.prenom} onChange={(e) => set('prenom', e.target.value)} placeholder="Ex : Yasmine" /></div>
-          <div><label>Date de naissance</label><input type="date" value={form.naissance} onChange={(e) => set('naissance', e.target.value)} /></div>
-          <div><label>Date d'inscription</label><input type="date" value={form.inscription_date} onChange={(e) => set('inscription_date', e.target.value)} /></div>
+          <DateSelect
+            label="Date de naissance"
+            value={form.naissance}
+            onChange={(v) => set('naissance', v)}
+            yearFrom={new Date().getFullYear() - 40}
+            yearTo={new Date().getFullYear() - 4}
+            clearable
+            showAge
+          />
+          <DateSelect
+            label="Date d'inscription"
+            value={form.inscription_date}
+            onChange={(v) => set('inscription_date', v)}
+            yearFrom={new Date().getFullYear() - 5}
+            yearTo={new Date().getFullYear() + 1}
+            todayButton
+          />
           <div><label>Téléphone élève</label><input value={form.tel} onChange={(e) => set('tel', e.target.value)} /></div>
           <div><label>Téléphone parent</label><input value={form.parent_tel} onChange={(e) => set('parent_tel', e.target.value)} /></div>
           <div><label>Adresse</label><input value={form.adresse} onChange={(e) => set('adresse', e.target.value)} /></div>
