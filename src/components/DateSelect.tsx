@@ -1,4 +1,5 @@
 import { CalendarX2 } from 'lucide-react'
+import { useEffect, useState } from 'react'
 
 const MOIS_FR = [
   'Janvier', 'Février', 'Mars', 'Avril', 'Mai', 'Juin',
@@ -6,9 +7,9 @@ const MOIS_FR = [
 ]
 
 function parseISO(value: string): { j: string; m: string; a: string } {
-  const m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(value || '')
-  if (!m) return { j: '', m: '', a: '' }
-  return { a: m[1], m: String(Number(m[2])), j: String(Number(m[3])) }
+  const match = /^(\d{4})-(\d{2})-(\d{2})$/.exec(value || '')
+  if (!match) return { j: '', m: '', a: '' }
+  return { a: match[1], m: String(Number(match[2])), j: String(Number(match[3])) }
 }
 
 const pad2 = (n: number) => String(n).padStart(2, '0')
@@ -19,36 +20,47 @@ function daysInMonth(year: number, month: number) {
 
 interface Props {
   label: string
-  /** Date ISO YYYY-MM-DD, ou '' si vide */
   value: string
   onChange: (iso: string) => void
   yearFrom: number
   yearTo: number
-  /** Bouton "Aujourd'hui" (utile pour l'inscription) */
   todayButton?: boolean
-  /** Bouton effacer (utile pour la naissance) */
   clearable?: boolean
-  /** Affiche l'âge calculé sous le champ (naissance) */
   showAge?: boolean
 }
 
 export default function DateSelect({ label, value, onChange, yearFrom, yearTo, todayButton, clearable, showAge }: Props) {
-  const { j, m, a } = parseISO(value)
+  const parsed = parseISO(value)
+
+  // Internal state lets each select update independently without requiring all three
+  const [j, setJ] = useState(parsed.j)
+  const [m, setM] = useState(parsed.m)
+  const [a, setA] = useState(parsed.a)
+
+  // Sync when value changes externally (e.g. editing a student)
+  useEffect(() => {
+    const p = parseISO(value)
+    setJ(p.j); setM(p.m); setA(p.a)
+  }, [value])
 
   const years: number[] = []
   for (let y = yearTo; y >= yearFrom; y--) years.push(y)
 
-  const emit = (jj: string, mm: string, aa: string) => {
-    if (!jj || !mm || !aa) {
-      // Sélection incomplète : on vide (laisse papa choisir tranquillement)
-      if (!jj && !mm && !aa) onChange('')
-      return
+  const commit = (jj: string, mm: string, aa: string) => {
+    if (jj && mm && aa) {
+      let day = Number(jj)
+      const max = daysInMonth(Number(aa), Number(mm))
+      if (day > max) day = max
+      onChange(`${aa}-${pad2(Number(mm))}-${pad2(day)}`)
+    } else if (!jj && !mm && !aa) {
+      onChange('')
     }
-    let day = Number(jj)
-    const max = daysInMonth(Number(aa), Number(mm))
-    if (day > max) day = max // ex : 30 fév → 28/29
-    onChange(`${aa}-${pad2(Number(mm))}-${pad2(day)}`)
+    // Partial selection: don't call onChange, just update internal UI
   }
+
+  const changeJ = (v: string) => { setJ(v); commit(v, m, a) }
+  const changeM = (v: string) => { setM(v); commit(j, v, a) }
+  const changeA = (v: string) => { setA(v); commit(j, m, v) }
 
   const age = (() => {
     if (!showAge || !value) return null
@@ -62,26 +74,34 @@ export default function DateSelect({ label, value, onChange, yearFrom, yearTo, t
 
   const today = () => {
     const t = new Date()
-    onChange(`${t.getFullYear()}-${pad2(t.getMonth() + 1)}-${pad2(t.getDate())}`)
+    const iso = `${t.getFullYear()}-${pad2(t.getMonth() + 1)}-${pad2(t.getDate())}`
+    const p = parseISO(iso)
+    setJ(p.j); setM(p.m); setA(p.a)
+    onChange(iso)
+  }
+
+  const clear = () => {
+    setJ(''); setM(''); setA('')
+    onChange('')
   }
 
   return (
     <div>
       <label>{label}{age !== null && <span className="muted"> — {age} ans</span>}</label>
       <div className="dateselect">
-        <select aria-label="Jour" value={j} onChange={(e) => emit(e.target.value, m, a)}>
+        <select aria-label="Jour" value={j} onChange={(e) => changeJ(e.target.value)}>
           <option value="">Jour</option>
           {Array.from({ length: 31 }, (_, i) => i + 1).map((d) => (
             <option key={d} value={d}>{d}</option>
           ))}
         </select>
-        <select aria-label="Mois" value={m} onChange={(e) => emit(j, e.target.value, a)}>
+        <select aria-label="Mois" value={m} onChange={(e) => changeM(e.target.value)}>
           <option value="">Mois</option>
           {MOIS_FR.map((nom, i) => (
             <option key={nom} value={i + 1}>{nom}</option>
           ))}
         </select>
-        <select aria-label="Année" value={a} onChange={(e) => emit(j, m, e.target.value)}>
+        <select aria-label="Année" value={a} onChange={(e) => changeA(e.target.value)}>
           <option value="">Année</option>
           {years.map((y) => (
             <option key={y} value={y}>{y}</option>
@@ -91,8 +111,8 @@ export default function DateSelect({ label, value, onChange, yearFrom, yearTo, t
       {(todayButton || clearable) && (
         <div className="date-actions">
           {todayButton && <button type="button" className="small" onClick={today}>Aujourd'hui</button>}
-          {clearable && value && (
-            <button type="button" className="small" onClick={() => onChange('')}>
+          {clearable && (j || m || a) && (
+            <button type="button" className="small" onClick={clear}>
               <CalendarX2 size={14} className="btn-ico" />Effacer
             </button>
           )}
