@@ -1,7 +1,6 @@
 // Couche SQLite — Gestion Papa
 // - Sous Electron (appli de papa) : sql.js + fichier gestion.db dans les donnees de l'app.
 // - Dans le navigateur : sql.js + localStorage (secours).
-// Meme schema repris tel quel sous Tauri (tauri-plugin-sql, sqlite:gestion.db).
 
 import initSqlJs, { type Database } from 'sql.js'
 import type { AttendanceRow, GradeRow, Group, PaymentRow, Student } from './types'
@@ -20,18 +19,6 @@ declare global {
 
 const STORAGE_KEY = 'gestion-papa-sqlite-v1'
 const isDesktop = () => typeof window !== 'undefined' && !!window.papaAPI?.isDesktop
-
-/** Ou se trouve la base ? (affiche dans la console + utilisable pour le support) */
-export async function dbLocation(): Promise<string> {
-  if (isDesktop()) {
-    try {
-      return await window.papaAPI!.dbPath()
-    } catch {
-      return 'dossier de l’application'
-    }
-  }
-  return 'stockage local du navigateur (cle ' + STORAGE_KEY + ')'
-}
 
 let db: Database | null = null
 let saveTimer: ReturnType<typeof setTimeout> | null = null
