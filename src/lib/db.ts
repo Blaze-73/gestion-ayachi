@@ -164,8 +164,19 @@ export async function getDb(): Promise<Database> {
   } else {
     SQL = await initSqlJs({ locateFile: () => 'sql-wasm.wasm' })
   }
+  let dbInstance: Database
   const saved = isDesktop() ? await restoreFromDesktop() : restore()
-  db = saved ? new SQL.Database(saved) : new SQL.Database()
+  if (saved) {
+    try {
+      dbInstance = new SQL.Database(saved)
+    } catch {
+      // fichier corrompu → on repart de zéro silencieusement
+      dbInstance = new SQL.Database()
+    }
+  } else {
+    dbInstance = new SQL.Database()
+  }
+  db = dbInstance
   db.exec(SCHEMA)
   db.exec('PRAGMA foreign_keys = ON;')
   hookFlushOnClose()
