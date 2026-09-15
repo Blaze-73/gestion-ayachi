@@ -52,7 +52,7 @@ export default function Students() {
 
   const saveRef = useRef<() => void>(() => {})
 
-  // Close form overlay with Escape + Ctrl+N to open new + Ctrl+S to save
+  // Close form overlay with Escape + Ctrl+N to open new + Ctrl+S to save + Ctrl+K to search
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
       if (e.key === 'Escape' && formOpen) {
@@ -69,6 +69,12 @@ export default function Students() {
       if (e.ctrlKey && e.key === 's' && formOpen) {
         e.preventDefault()
         saveRef.current()
+      }
+      if (e.ctrlKey && e.key === 'k') {
+        e.preventDefault()
+        setFormOpen(false)
+        searchRef.current?.focus()
+        searchRef.current?.select()
       }
     }
     window.addEventListener('keydown', onKey)
@@ -260,7 +266,7 @@ export default function Students() {
             <input
               ref={searchRef}
               className="search-input"
-              placeholder="Rechercher par nom, prénom ou téléphone…"
+              placeholder="Rechercher (Ctrl+K)…"
               value={q}
               onChange={(e) => setQ(e.target.value)}
             />
