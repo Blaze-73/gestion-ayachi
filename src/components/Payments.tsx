@@ -6,7 +6,7 @@ import type { Student } from '../lib/types'
 export default function Payments() {
   const [mois, setMois] = useState(monthISO())
   const [students, setStudents] = useState<Student[]>([])
-  const [rows, setRows] = useState<Record<number, { montant: number; statut: 'paye' | 'impaye' }>>({})
+  const [rows, setRows] = useState<Record<number, { montant: string; statut: 'paye' | 'impaye' }>>({})
   const [dirty, setDirty] = useState<Record<number, boolean>>({})
   const [justSaved, setJustSaved] = useState<number | null>(null)
   const flashTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
@@ -16,16 +16,16 @@ export default function Payments() {
   const refresh = () => {
     setStudents(listStudents(''))
     const existing = paymentsForMonth(mois)
-    const m: Record<number, { montant: number; statut: 'paye' | 'impaye' }> = {}
-    for (const p of existing) m[p.student_id] = { montant: p.montant, statut: p.statut }
+    const m: Record<number, { montant: string; statut: 'paye' | 'impaye' }> = {}
+    for (const p of existing) m[p.student_id] = { montant: String(p.montant || ''), statut: p.statut }
     setRows(m)
     setDirty({})
   }
   useEffect(refresh, []) // eslint-disable-line react-hooks/exhaustive-deps
   useEffect(refresh, [mois]) // eslint-disable-line react-hooks/exhaustive-deps
 
-  const row = (id: number) => rows[id] ?? { montant: 0, statut: 'impaye' as const }
-  const edit = (id: number, patch: Partial<{ montant: number; statut: 'paye' | 'impaye' }>) => {
+  const row = (id: number) => rows[id] ?? { montant: '', statut: 'impaye' as const }
+  const edit = (id: number, patch: Partial<{ montant: string; statut: 'paye' | 'impaye' }>) => {
     setRows((r) => ({ ...r, [id]: { ...row(id), ...patch } }))
     setDirty((d) => ({ ...d, [id]: true }))
     if (justSaved === id) setJustSaved(null)
@@ -60,7 +60,7 @@ export default function Payments() {
             <tr key={s.id} className={saved ? 'row-saved' : ''}>
               <td><strong>{s.prenom} {s.nom}</strong></td>
               <td style={{ maxWidth: 140 }}>
-                <input type="number" min={0} value={row(s.id).montant} onChange={(e) => edit(s.id, { montant: Number(e.target.value) })} />
+                <input type="number" min={0} value={row(s.id).montant} onChange={(e) => edit(s.id, { montant: e.target.value })} />
               </td>
               <td>
                 <select value={row(s.id).statut} onChange={(e) => edit(s.id, { statut: e.target.value as 'paye' | 'impaye' })}>
