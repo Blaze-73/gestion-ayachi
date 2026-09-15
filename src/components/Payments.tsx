@@ -1,6 +1,6 @@
 import { Check, Save } from 'lucide-react'
 import { useEffect, useRef, useState } from 'react'
-import { listStudents, monthISO, paymentsForMonth, setPayment, todayISO } from '../lib/db'
+import { distinctPaymentMonths, listStudents, monthISO, paymentsForMonth, setPayment, todayISO } from '../lib/db'
 import type { Student } from '../lib/types'
 
 export default function Payments() {
@@ -10,6 +10,8 @@ export default function Payments() {
   const [dirty, setDirty] = useState<Record<number, boolean>>({})
   const [justSaved, setJustSaved] = useState<number | null>(null)
   const flashTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const [historyMonths, setHistoryMonths] = useState<string[]>([])
+  const [showHistory, setShowHistory] = useState(false)
 
   useEffect(() => () => { if (flashTimer.current) clearTimeout(flashTimer.current) }, [])
 
@@ -20,6 +22,7 @@ export default function Payments() {
     for (const p of existing) m[p.student_id] = { montant: String(p.montant || ''), statut: p.statut }
     setRows(m)
     setDirty({})
+    setHistoryMonths(distinctPaymentMonths().map((r) => r.mois))
   }
   useEffect(refresh, []) // eslint-disable-line react-hooks/exhaustive-deps
   useEffect(refresh, [mois]) // eslint-disable-line react-hooks/exhaustive-deps
@@ -48,8 +51,23 @@ export default function Payments() {
     <div className="panel">
       <div className="row" style={{ justifyContent: 'space-between' }}>
         <h2>Paiements mensuels</h2>
-        <div><label>Mois</label><input type="month" value={mois} onChange={(e) => setMois(e.target.value)} /></div>
+        <div className="row">
+          <div><label>Mois</label><input type="month" value={mois} onChange={(e) => setMois(e.target.value)} /></div>
+          <button className="small" onClick={() => setShowHistory(!showHistory)}>{showHistory ? 'Masquer' : 'Historique'}</button>
+        </div>
       </div>
+
+      {showHistory && historyMonths.length > 0 && (
+        <div className="history-panel">
+          <p className="muted" style={{ margin: '0 0 8px' }}>Mois enregistrés :</p>
+          <div className="row" style={{ flexWrap: 'wrap' }}>
+            {historyMonths.map((m) => (
+              <button key={m} className={`small ${m === mois ? 'primary' : ''}`} onClick={() => { setMois(m); setShowHistory(false) }}>{m}</button>
+            ))}
+          </div>
+        </div>
+      )}
+
       <p className="muted">Encaissé : <strong>{totalPaye} DA</strong> / Attendu : <strong>{totalDu} DA</strong></p>
       <table>
         <thead><tr><th>Élève</th><th>Montant (DA)</th><th>Statut</th><th>Enregistrer</th></tr></thead>

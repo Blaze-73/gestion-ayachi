@@ -29,7 +29,8 @@ CREATE TABLE IF NOT EXISTS groups (
   nom TEXT NOT NULL,
   matiere TEXT DEFAULT '',
   jour TEXT DEFAULT '',
-  heure TEXT DEFAULT ''
+  heure TEXT DEFAULT '',
+  capacite INTEGER DEFAULT 0
 );
 CREATE TABLE IF NOT EXISTS students (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -191,9 +192,9 @@ function run(sql: string, params: unknown[] = []): number {
 // ---------- Groupes ----------
 export const listGroups = () => all<Group>('SELECT * FROM groups ORDER BY nom')
 export const addGroup = (g: Omit<Group, 'id'>) =>
-  run('INSERT INTO groups (nom, matiere, jour, heure) VALUES (?,?,?,?)', [g.nom, g.matiere, g.jour, g.heure])
+  run('INSERT INTO groups (nom, matiere, jour, heure, capacite) VALUES (?,?,?,?,?)', [g.nom, g.matiere, g.jour, g.heure, g.capacite])
 export const updateGroup = (g: Group) =>
-  void run('UPDATE groups SET nom=?, matiere=?, jour=?, heure=? WHERE id=?', [g.nom, g.matiere, g.jour, g.heure, g.id])
+  void run('UPDATE groups SET nom=?, matiere=?, jour=?, heure=?, capacite=? WHERE id=?', [g.nom, g.matiere, g.jour, g.heure, g.capacite, g.id])
 export const deleteGroup = (id: number) => void run('DELETE FROM groups WHERE id=?', [id])
 
 // ---------- Eleves ----------
@@ -232,6 +233,18 @@ export const markAttendance = (studentId: number, date: string, statut: 'present
   )
 export const attendanceForStudent = (studentId: number) =>
   all<AttendanceRow>('SELECT * FROM attendance WHERE student_id=? ORDER BY date DESC LIMIT 20', [studentId])
+export const attendanceCountForStudent = (studentId: number) =>
+  all<{ total: number; presents: number }>(
+    'SELECT COUNT(*) AS total, SUM(CASE WHEN statut=\'present\' THEN 1 ELSE 0 END) AS presents FROM attendance WHERE student_id=?',
+    [studentId],
+  )[0] ?? { total: 0, presents: 0 }
+export const absentStudentsForDate = (date: string) =>
+  all<{ prenom: string; nom: string }>(
+    `SELECT s.prenom, s.nom FROM attendance a JOIN students s ON a.student_id = s.id WHERE a.date=? AND a.statut='absent' ORDER BY s.nom`,
+    [date],
+  )
+export const recentStudents = (limit: number) =>
+  all<Student>('SELECT * FROM students ORDER BY id DESC LIMIT ?', [limit])
 
 // ---------- Paiements ----------
 export const paymentsForMonth = (mois: string) =>
@@ -245,6 +258,8 @@ export const paymentsForStudent = (studentId: number) =>
   all<PaymentRow>('SELECT * FROM payments WHERE student_id=? ORDER BY mois DESC LIMIT 12', [studentId])
 export const unpaidCount = (mois: string) =>
   all<{ n: number }>("SELECT COUNT(*) AS n FROM payments WHERE mois=? AND statut='impaye'", [mois])[0]?.n ?? 0
+export const distinctPaymentMonths = () =>
+  all<{ mois: string }>('SELECT DISTINCT mois FROM payments ORDER BY mois DESC')
 
 // ---------- Notes ----------
 export const gradesForStudent = (studentId: number) =>

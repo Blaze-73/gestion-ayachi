@@ -9,7 +9,7 @@ import Grades from './components/Grades'
 import Groups from './components/Groups'
 import Payments from './components/Payments'
 import Students from './components/Students'
-import { countStudents, exportBinary, getDb, importBinary, listStudents, monthISO, paymentsForMonth, unpaidCount } from './lib/db'
+import { absentStudentsForDate, countStudents, exportBinary, getDb, importBinary, listStudents, monthISO, paymentsForMonth, recentStudents, todayISO, unpaidCount } from './lib/db'
 import type { TabKey } from './lib/types'
 
 const TABS: { key: TabKey; label: string; Icon: LucideIcon }[] = [
@@ -33,6 +33,8 @@ export default function App() {
   const [impayeList, setImpayeList] = useState<string[]>([])
   const [showBackupReminder, setShowBackupReminder] = useState(false)
   const [backupDismissed, setBackupDismissed] = useState(false)
+  const [absentsToday, setAbsentsToday] = useState<{ prenom: string; nom: string }[]>([])
+  const [recentList, setRecentList] = useState<{ prenom: string; nom: string }[]>([])
 
   useEffect(() => {
     getDb()
@@ -47,7 +49,11 @@ export default function App() {
             .slice(0, 8)
             .map((s) => `${s.prenom} ${s.nom}`),
         )
-        // Check backup reminder
+        // Absents today
+        setAbsentsToday(absentStudentsForDate(todayISO()))
+        // Recent students
+        setRecentList(recentStudents(3).map((s) => ({ prenom: s.prenom, nom: s.nom })))
+        // Backup reminder
         const last = localStorage.getItem(BACKUP_KEY)
         const lastTime = last ? Number(last) : 0
         if (Date.now() - lastTime > BACKUP_INTERVAL) setShowBackupReminder(true)
@@ -95,7 +101,6 @@ export default function App() {
         </div>
       </div>
 
-      {/* Backup reminder banner */}
       {showBackupReminder && !backupDismissed && (
         <div className="backup-banner no-print">
           <span>Pensez à sauvegarder vos données (Sauvegarde en haut à droite).</span>
@@ -134,6 +139,18 @@ export default function App() {
               <div className="panel">
                 <h2><TriangleAlert size={18} className="btn-ico" />À relancer ({monthISO()})</h2>
                 <p>{impayeList.join(' • ')}</p>
+              </div>
+            )}
+            {absentsToday.length > 0 && (
+              <div className="panel">
+                <h2>Absents aujourd'hui</h2>
+                <p>{absentsToday.map((s) => `${s.prenom} ${s.nom}`).join(' • ')}</p>
+              </div>
+            )}
+            {recentList.length > 0 && (
+              <div className="panel">
+                <h2>Derniers élèves inscrits</h2>
+                <p>{recentList.map((s) => `${s.prenom} ${s.nom}`).join(' • ')}</p>
               </div>
             )}
           </>

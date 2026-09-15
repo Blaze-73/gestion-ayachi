@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { attendanceForStudent, averageForStudent, getStudent, listGroups, paymentsForStudent } from '../lib/db'
+import { attendanceCountForStudent, averageForStudent, getStudent, listGroups, paymentsForStudent } from '../lib/db'
 import type { Group, Student } from '../lib/types'
 
 /** Fiche eleve A4 imprimable : profil + photo + resume presences/paiements/notes + signature. */
@@ -14,8 +14,7 @@ export default function FicheEleve({ studentId }: { studentId: number }) {
 
   if (!student) return <p className="muted">Élève introuvable.</p>
   const groupe = groups.find((g) => g.id === student.groupe_id)
-  const presences = attendanceForStudent(student.id)
-  const nbPresent = presences.filter((p) => p.statut === 'present').length
+  const { total: totalSessions, presents: nbPresent } = attendanceCountForStudent(student.id)
   const paiements = paymentsForStudent(student.id)
   const moyenne = averageForStudent(student.id)
 
@@ -45,7 +44,8 @@ export default function FicheEleve({ studentId }: { studentId: number }) {
 
       <h3>Scolarité</h3>
       <dl>
-        <dt>Présences (20 dernières)</dt><dd>{nbPresent} présent(s) / {presences.length} séance(s)</dd>
+        <dt>Présences</dt>
+        <dd>{totalSessions > 0 ? <>{nbPresent}/{totalSessions} séances ({Math.round(nbPresent / totalSessions * 100)}%)</> : '—'}</dd>
         <dt>Moyenne</dt><dd>{moyenne !== null ? `${moyenne.toFixed(2)} / 20` : '—'}</dd>
         <dt>Dernier paiement</dt>
         <dd>{paiements[0] ? `${paiements[0].mois} — ${paiements[0].montant} DA (${paiements[0].statut === 'paye' ? 'payé' : 'impayé'})` : '—'}</dd>

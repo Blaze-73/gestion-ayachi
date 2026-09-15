@@ -198,6 +198,28 @@ tr.row-saved td { background: #f0fdf4; }
   margin-top: 8px;
 }
 
+/* Payment history panel */
+.history-panel {
+  padding: 10px 0;
+  margin-bottom: 8px;
+  border-bottom: 1px solid var(--line);
+}
+
+/* Attendance quick-toggle name button */
+.student-name-btn {
+  background: none;
+  border: none;
+  padding: 4px 8px;
+  cursor: pointer;
+  border-radius: 6px;
+  text-align: left;
+  font-size: 15px;
+  color: var(--ink);
+}
+.student-name-btn:hover {
+  background: var(--line);
+}
+
 @keyframes toast-in {
   0% { opacity: 0; transform: translateY(-6px); }
   100% { opacity: 1; transform: translateY(0); }

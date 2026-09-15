@@ -50,7 +50,9 @@ export default function Students() {
     return () => window.removeEventListener('keydown', onKey)
   }, [ficheId])
 
-  // Close form overlay with Escape + Ctrl+N to open new
+  const saveRef = useRef<() => void>(() => {})
+
+  // Close form overlay with Escape + Ctrl+N to open new + Ctrl+S to save
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
       if (e.key === 'Escape' && formOpen) {
@@ -63,6 +65,10 @@ export default function Students() {
         setEditing(null)
         setForm(EMPTY)
         setFormOpen(true)
+      }
+      if (e.ctrlKey && e.key === 's' && formOpen) {
+        e.preventDefault()
+        saveRef.current()
       }
     }
     window.addEventListener('keydown', onKey)
@@ -86,6 +92,7 @@ export default function Students() {
     if (savedTimer.current) clearTimeout(savedTimer.current)
     savedTimer.current = setTimeout(() => setJustSaved(false), 1800)
   }
+  useEffect(() => { saveRef.current = save })
 
   const openNew = () => {
     setEditing(null)

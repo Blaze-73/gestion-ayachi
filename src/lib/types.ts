@@ -6,6 +6,7 @@ export interface Group {
   matiere: string
   jour: string
   heure: string
+  capacite: number
 }
 
 export interface Student {
