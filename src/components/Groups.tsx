@@ -4,6 +4,7 @@ import { addGroup, deleteGroup, listGroups, updateGroup } from '../lib/db'
 import type { Group } from '../lib/types'
 
 const JOURS = ['Samedi', 'Dimanche', 'Lundi', 'Mardi', 'Mercredi', 'Jeudi', 'Vendredi']
+const JOUR_ORDER = Object.fromEntries(JOURS.map((j, i) => [j, i]))
 
 export default function Groups() {
   const [groups, setGroups] = useState<Group[]>([])
@@ -48,7 +49,7 @@ export default function Groups() {
         <table>
           <thead><tr><th>Groupe</th><th>Matière</th><th>Jour</th><th>Heure</th><th>Actions</th></tr></thead>
           <tbody>
-            {groups.map((g) => (
+            {[...groups].sort((a, b) => (JOUR_ORDER[a.jour] ?? 99) - (JOUR_ORDER[b.jour] ?? 99)).map((g) => (
               <tr key={g.id}>
                 <td><strong>{g.nom}</strong></td><td>{g.matiere || '—'}</td>
                 <td>{g.jour || '—'}</td><td>{g.heure || '—'}</td>

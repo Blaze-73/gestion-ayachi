@@ -83,6 +83,12 @@ export default function Payments() {
           })}
         </tbody>
       </table>
+      {students.length > 0 && (
+        <div className="payments-footer">
+          <span>Encaissé : <strong>{totalPaye} DA</strong></span>
+          <span>Attendu : <strong>{totalDu} DA</strong></span>
+        </div>
+      )}
       {students.length === 0 && <p className="muted">Ajoutez d'abord des élèves dans l'onglet Élèves.</p>}
     </div>
   )

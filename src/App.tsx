@@ -21,6 +21,9 @@ const TABS: { key: TabKey; label: string; Icon: LucideIcon }[] = [
   { key: 'notes', label: 'Notes', Icon: NotebookPen },
 ]
 
+const BACKUP_KEY = 'gestion-ayachi-last-backup'
+const BACKUP_INTERVAL = 14 * 24 * 60 * 60 * 1000 // 14 jours
+
 export default function App() {
   const [ready, setReady] = useState(false)
   const [error, setError] = useState('')
@@ -28,6 +31,8 @@ export default function App() {
   const [nbEleves, setNbEleves] = useState(0)
   const [impayes, setImpayes] = useState(0)
   const [impayeList, setImpayeList] = useState<string[]>([])
+  const [showBackupReminder, setShowBackupReminder] = useState(false)
+  const [backupDismissed, setBackupDismissed] = useState(false)
 
   useEffect(() => {
     getDb()
@@ -42,6 +47,10 @@ export default function App() {
             .slice(0, 8)
             .map((s) => `${s.prenom} ${s.nom}`),
         )
+        // Check backup reminder
+        const last = localStorage.getItem(BACKUP_KEY)
+        const lastTime = last ? Number(last) : 0
+        if (Date.now() - lastTime > BACKUP_INTERVAL) setShowBackupReminder(true)
       })
       .catch((e) => setError(String(e)))
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -58,6 +67,8 @@ export default function App() {
     a.download = `gestion-ayachi-${new Date().toISOString().slice(0, 10)}.db`
     a.click()
     URL.revokeObjectURL(a.href)
+    localStorage.setItem(BACKUP_KEY, String(Date.now()))
+    setShowBackupReminder(false)
   }
 
   const restore = async (f: File | undefined) => {
@@ -83,6 +94,14 @@ export default function App() {
           </label>
         </div>
       </div>
+
+      {/* Backup reminder banner */}
+      {showBackupReminder && !backupDismissed && (
+        <div className="backup-banner no-print">
+          <span>Pensez à sauvegarder vos données (Sauvegarde en haut à droite).</span>
+          <button className="small" onClick={() => setBackupDismissed(true)}> compris</button>
+        </div>
+      )}
 
       <nav className="tabs">
         {TABS.map(({ key, label, Icon }) => (

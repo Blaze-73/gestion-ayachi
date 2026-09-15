@@ -1,4 +1,4 @@
-import { Check, Pencil, Plus, Printer, Search, Trash2, UserPlus, X } from 'lucide-react'
+import { Check, Pencil, Plus, Printer, Search, Trash2, Undo2, UserPlus, X } from 'lucide-react'
 import { useEffect, useRef, useState } from 'react'
 import {
   addStudent, deleteStudent, fileToPhotoDataUrl, getStudent,
@@ -25,7 +25,15 @@ export default function Students() {
   const savedTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
   const searchRef = useRef<HTMLInputElement>(null)
 
-  useEffect(() => () => { if (savedTimer.current) clearTimeout(savedTimer.current) }, [])
+  // Undo delete state
+  const [deletedStudent, setDeletedStudent] = useState<Student | null>(null)
+  const undoTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
+
+  // Photo drag state
+  const [dragging, setDragging] = useState(false)
+  const dragCounter = useRef(0)
+
+  useEffect(() => () => { if (savedTimer.current) clearTimeout(savedTimer.current); if (undoTimer.current) clearTimeout(undoTimer.current) }, [])
 
   const refresh = () => {
     setStudents(listStudents(q))
@@ -42,14 +50,19 @@ export default function Students() {
     return () => window.removeEventListener('keydown', onKey)
   }, [ficheId])
 
-  // Close form overlay with Escape
+  // Close form overlay with Escape + Ctrl+N to open new
   useEffect(() => {
-    if (!formOpen) return
     const onKey = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') {
+      if (e.key === 'Escape' && formOpen) {
         setFormOpen(false)
         setEditing(null)
         setForm(EMPTY)
+      }
+      if (e.ctrlKey && e.key === 'n') {
+        e.preventDefault()
+        setEditing(null)
+        setForm(EMPTY)
+        setFormOpen(true)
       }
     }
     window.addEventListener('keydown', onKey)
@@ -97,14 +110,54 @@ export default function Students() {
   }
 
   const remove = (s: Student) => {
-    if (confirm(`Supprimer ${s.prenom} ${s.nom} ?`)) { deleteStudent(s.id); refresh() }
+    if (!confirm(`Supprimer ${s.prenom} ${s.nom} ?`)) return
+    deleteStudent(s.id)
+    refresh()
+    setDeletedStudent(s)
+    if (undoTimer.current) clearTimeout(undoTimer.current)
+    undoTimer.current = setTimeout(() => setDeletedStudent(null), 5000)
+  }
+
+  const undoDelete = () => {
+    if (!deletedStudent) return
+    if (undoTimer.current) clearTimeout(undoTimer.current)
+    addStudent({ nom: deletedStudent.nom, prenom: deletedStudent.prenom, naissance: deletedStudent.naissance, tel: deletedStudent.tel, parent_tel: deletedStudent.parent_tel, adresse: deletedStudent.adresse, photo: deletedStudent.photo, groupe_id: deletedStudent.groupe_id, inscription_date: deletedStudent.inscription_date, remarques: deletedStudent.remarques })
+    refresh()
+    setDeletedStudent(null)
   }
 
   const set = (k: keyof typeof EMPTY, v: string | number | null) =>
     setForm((f) => ({ ...f, [k]: v }))
 
+  // Photo drag-and-drop handlers
+  const onDragEnter = (e: React.DragEvent) => {
+    e.preventDefault()
+    dragCounter.current++
+    if (e.dataTransfer.types.includes('Files')) setDragging(true)
+  }
+  const onDragLeave = (e: React.DragEvent) => {
+    e.preventDefault()
+    dragCounter.current--
+    if (dragCounter.current === 0) setDragging(false)
+  }
+  const onDragOver = (e: React.DragEvent) => { e.preventDefault() }
+  const onDrop = (e: React.DragEvent) => {
+    e.preventDefault()
+    dragCounter.current = 0
+    setDragging(false)
+    const file = e.dataTransfer.files[0]
+    if (file && file.type.startsWith('image/')) {
+      if (!formOpen) {
+        setEditing(null)
+        setForm({ ...EMPTY, inscription_date: todayISO() })
+        setFormOpen(true)
+      }
+      void onPhoto(file)
+    }
+  }
+
   return (
-    <div>
+    <div onDragEnter={onDragEnter} onDragLeave={onDragLeave} onDragOver={onDragOver} onDrop={onDrop}>
       {/* Fiche overlay */}
       {ficheId !== null && (
         <div className="overlay" onClick={() => setFicheId(null)}>
@@ -174,6 +227,24 @@ export default function Students() {
         </div>
       )}
 
+      {/* Undo delete toast */}
+      {deletedStudent && (
+        <div className="undo-toast">
+          <span>{deletedStudent.prenom} {deletedStudent.nom} supprimé</span>
+          <button className="small" onClick={undoDelete}><Undo2 size={14} className="btn-ico" />Annuler</button>
+        </div>
+      )}
+
+      {/* Photo drag overlay */}
+      {dragging && (
+        <div className="drag-overlay">
+          <div className="drag-box">
+            <UserPlus size={40} color="var(--primary)" />
+            <p>Déposez la photo ici</p>
+          </div>
+        </div>
+      )}
+
       {/* Search + add bar */}
       <div className="panel">
         <div className="students-toolbar">
@@ -187,7 +258,7 @@ export default function Students() {
               onChange={(e) => setQ(e.target.value)}
             />
           </div>
-          <button className="primary" onClick={openNew}><Plus size={17} className="btn-ico" />Nouvel élève</button>
+          <button className="primary" onClick={openNew}><Plus size={17} className="btn-ico" />Nouvel élève <span className="shortcut-hint">Ctrl+N</span></button>
         </div>
 
         {justSaved && <div className="save-toast"><Check size={16} className="btn-ico" />Élève enregistré avec succès</div>}
