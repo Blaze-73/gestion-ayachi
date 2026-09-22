@@ -12,6 +12,7 @@ export default function Payments() {
   const flashTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
   const [historyMonths, setHistoryMonths] = useState<string[]>([])
   const [showHistory, setShowHistory] = useState(false)
+  const [onlyUnpaid, setOnlyUnpaid] = useState(false)
 
   useEffect(() => () => { if (flashTimer.current) clearTimeout(flashTimer.current) }, [])
 
@@ -44,8 +45,10 @@ export default function Payments() {
     flashTimer.current = setTimeout(() => setJustSaved(null), 1600)
   }
 
-  const totalDu = students.reduce((t, s) => t + (Number(row(s.id).montant) || 0), 0)
-  const totalPaye = students.filter((s) => row(s.id).statut === 'paye').reduce((t, s) => t + (Number(row(s.id).montant) || 0), 0)
+  const visible = onlyUnpaid ? students.filter((s) => row(s.id).statut !== 'paye') : students
+
+  const totalDu = visible.reduce((t, s) => t + (Number(row(s.id).montant) || 0), 0)
+  const totalPaye = visible.filter((s) => row(s.id).statut === 'paye').reduce((t, s) => t + (Number(row(s.id).montant) || 0), 0)
 
   return (
     <div className="panel">
@@ -53,6 +56,7 @@ export default function Payments() {
         <h2>Paiements mensuels</h2>
         <div className="row">
           <div><label>Mois</label><input type="month" value={mois} onChange={(e) => setMois(e.target.value)} /></div>
+          <button className={onlyUnpaid ? 'small primary' : 'small'} onClick={() => setOnlyUnpaid(!onlyUnpaid)}>Impayés uniquement</button>
           <button className="small" onClick={() => setShowHistory(!showHistory)}>{showHistory ? 'Masquer' : 'Historique'}</button>
         </div>
       </div>
@@ -72,7 +76,7 @@ export default function Payments() {
       <table>
         <thead><tr><th>Élève</th><th>Montant (DA)</th><th>Statut</th><th>Enregistrer</th></tr></thead>
         <tbody>
-          {students.map((s) => {
+          {visible.map((s) => {
             const saved = justSaved === s.id
             return (
             <tr key={s.id} className={saved ? 'row-saved' : ''}>
@@ -101,11 +105,14 @@ export default function Payments() {
           })}
         </tbody>
       </table>
-      {students.length > 0 && (
+      {visible.length > 0 && (
         <div className="payments-footer">
           <span>Encaissé : <strong>{totalPaye} DA</strong></span>
           <span>Attendu : <strong>{totalDu} DA</strong></span>
         </div>
+      )}
+      {visible.length === 0 && onlyUnpaid && students.length > 0 && (
+        <p className="muted">Tout est payé pour ce mois. <button className="small" onClick={() => setOnlyUnpaid(false)}>Voir tous</button></p>
       )}
       {students.length === 0 && <p className="muted">Ajoutez d'abord des élèves dans l'onglet Élèves.</p>}
     </div>
