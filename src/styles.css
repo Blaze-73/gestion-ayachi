@@ -248,6 +248,25 @@ tr.row-saved td { background: #f0fdf4; }
 .loading { padding: 40px; text-align: center; color: var(--muted); }
 
 /* ---------- Students page ---------- */
+.group-pills {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-bottom: 12px;
+}
+.pill {
+  padding: 6px 12px;
+  font-size: 14px;
+  border-radius: 20px;
+  border: 1px solid var(--line);
+  background: var(--card);
+  cursor: pointer;
+}
+.pill.active {
+  background: var(--primary);
+  border-color: var(--primary);
+  color: #fff;
+}
 .students-toolbar {
   display: flex;
   gap: 12px;

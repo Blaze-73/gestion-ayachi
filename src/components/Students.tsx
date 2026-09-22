@@ -17,6 +17,7 @@ export default function Students() {
   const [q, setQ] = useState('')
   const [students, setStudents] = useState<Student[]>([])
   const [groups, setGroups] = useState<Group[]>([])
+  const [filterGroupeId, setFilterGroupeId] = useState<number | 'all' | 'none'>('all')
   const [formOpen, setFormOpen] = useState(false)
   const [editing, setEditing] = useState<Student | null>(null)
   const [form, setForm] = useState(EMPTY)
@@ -82,6 +83,15 @@ export default function Students() {
   }, [formOpen])
 
   const groupName = (id: number | null) => groups.find((g) => g.id === id)?.nom ?? '—'
+
+  const filtered = students.filter((s) => {
+    if (filterGroupeId === 'all') return true
+    if (filterGroupeId === 'none') return s.groupe_id === null
+    return s.groupe_id === filterGroupeId
+  })
+  const groupCount = (id: number | 'none') =>
+    students.filter((s) => (id === 'none' ? s.groupe_id === null : s.groupe_id === id)).length
+  const noGroupCount = groupCount('none')
 
   const onPhoto = async (f: File | undefined) => {
     if (!f) return
@@ -260,6 +270,19 @@ export default function Students() {
 
       {/* Search + add bar */}
       <div className="panel">
+        <div className="group-pills">
+          <button className={filterGroupeId === 'all' ? 'pill active' : 'pill'} onClick={() => setFilterGroupeId('all')}>
+            Tous ({students.length})
+          </button>
+          {groups.map((g) => (
+            <button key={g.id} className={filterGroupeId === g.id ? 'pill active' : 'pill'} onClick={() => setFilterGroupeId(g.id)}>
+              {g.nom} ({groupCount(g.id)})
+            </button>
+          ))}
+          <button className={filterGroupeId === 'none' ? 'pill active' : 'pill'} onClick={() => setFilterGroupeId('none')}>
+            Sans groupe ({noGroupCount})
+          </button>
+        </div>
         <div className="students-toolbar">
           <div className="search-box">
             <Search size={18} className="search-icon" />
@@ -276,13 +299,13 @@ export default function Students() {
 
         {justSaved && <div className="save-toast"><Check size={16} className="btn-ico" />Élève enregistré avec succès</div>}
 
-        {students.length === 0 ? (
+        {filtered.length === 0 ? (
           <p className="muted" style={{ textAlign: 'center', padding: '24px 0' }}>
-            {q ? 'Aucun résultat pour cette recherche.' : 'Aucun élève. Ajoutez le premier avec le bouton ci-dessus.'}
+            {q || filterGroupeId !== 'all' ? 'Aucun résultat pour ce filtre.' : 'Aucun élève. Ajoutez le premier avec le bouton ci-dessus.'}
           </p>
         ) : (
           <div className="students-list">
-            {students.map((s) => (
+            {filtered.map((s) => (
               <div key={s.id} className="student-row">
                 <div className="student-row-main">
                   {s.photo ? <img src={s.photo} className="avatar" alt="" /> : <div className="avatar avatar-placeholder" />}
