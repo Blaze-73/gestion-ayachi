@@ -36,6 +36,7 @@ export default function App() {
   const [absentsToday, setAbsentsToday] = useState<{ prenom: string; nom: string }[]>([])
   const [recentList, setRecentList] = useState<{ prenom: string; nom: string }[]>([])
   const [todayGroups, setTodayGroups] = useState<{ id: number; nom: string; matiere: string; heure: string }[]>([])
+  const [attendanceGroupId, setAttendanceGroupId] = useState<number | null>(null)
 
   useEffect(() => {
     getDb()
@@ -114,7 +115,7 @@ export default function App() {
 
       <nav className="tabs">
         {TABS.map(({ key, label, Icon }) => (
-          <button key={key} className={tab === key ? 'active' : ''} onClick={() => setTab(key)}>
+          <button key={key} className={tab === key ? 'active' : ''} onClick={() => { if (key === 'presences') setAttendanceGroupId(null); setTab(key) }}>
             <Icon size={17} className="btn-ico" />{label}
           </button>
         ))}
@@ -139,7 +140,7 @@ export default function App() {
                         <strong>{g.nom}</strong>
                         <span className="muted">{g.heure || '—'}{g.matiere ? ` · ${g.matiere}` : ''}</span>
                       </div>
-                      <button className="small primary" onClick={() => setTab('presences')}>
+                      <button className="small primary" onClick={() => { setAttendanceGroupId(g.id); setTab('presences') }}>
                         <ListChecks size={14} className="btn-ico" />Faire l'appel
                       </button>
                     </div>
@@ -156,7 +157,7 @@ export default function App() {
               </p>
               <div className="row">
                 <button className="primary" onClick={() => setTab('eleves')}><UserPlus size={16} className="btn-ico" />Ajouter un élève</button>
-                <button onClick={() => setTab('presences')}><ListChecks size={16} className="btn-ico" />Faire l'appel</button>
+                <button onClick={() => { setAttendanceGroupId(null); setTab('presences') }}><ListChecks size={16} className="btn-ico" />Faire l'appel</button>
               </div>
             </div>
             {impayeList.length > 0 && (
@@ -181,7 +182,7 @@ export default function App() {
         )}
         {tab === 'eleves' && <Students />}
         {tab === 'groupes' && <Groups />}
-        {tab === 'presences' && <Attendance />}
+        {tab === 'presences' && <Attendance key={attendanceGroupId ?? 'none'} initialGroupId={attendanceGroupId} />}
         {tab === 'paiements' && <Payments />}
         {tab === 'notes' && <Grades />}
       </main>

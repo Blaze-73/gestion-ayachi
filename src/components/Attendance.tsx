@@ -3,9 +3,9 @@ import { useEffect, useState } from 'react'
 import { attendanceForDate, listGroups, markAttendance, studentsByGroup, todayISO } from '../lib/db'
 import type { Group, Student } from '../lib/types'
 
-export default function Attendance() {
+export default function Attendance({ initialGroupId }: { initialGroupId?: number | null } = {}) {
   const [groups, setGroups] = useState<Group[]>([])
-  const [groupeId, setGroupeId] = useState<number | ''>('')
+  const [groupeId, setGroupeId] = useState<number | ''>(initialGroupId ?? '')
   const [date, setDate] = useState(todayISO())
   const [students, setStudents] = useState<Student[]>([])
   const [marks, setMarks] = useState<Record<number, 'present' | 'absent'>>({})
