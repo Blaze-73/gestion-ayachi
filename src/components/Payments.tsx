@@ -13,6 +13,7 @@ export default function Payments() {
   const [historyMonths, setHistoryMonths] = useState<string[]>([])
   const [showHistory, setShowHistory] = useState(false)
   const [onlyUnpaid, setOnlyUnpaid] = useState(false)
+  const [defaultAmount, setDefaultAmount] = useState('')
 
   useEffect(() => () => { if (flashTimer.current) clearTimeout(flashTimer.current) }, [])
 
@@ -45,6 +46,16 @@ export default function Payments() {
     flashTimer.current = setTimeout(() => setJustSaved(null), 1600)
   }
 
+  const fillEmptyAmounts = () => {
+    const amount = Number(defaultAmount)
+    if (!amount || amount <= 0) { alert('Entrez un montant valide.'); return }
+    const targets = students.filter((s) => !(Number(row(s.id).montant) > 0))
+    if (targets.length === 0) { alert('Tous les montants sont déjà remplis.'); return }
+    for (const s of targets) setPayment(s.id, mois, amount, row(s.id).statut, row(s.id).statut === 'paye' ? todayISO() : '')
+    setDefaultAmount('')
+    refresh()
+  }
+
   const visible = onlyUnpaid ? students.filter((s) => row(s.id).statut !== 'paye') : students
 
   const totalDu = visible.reduce((t, s) => t + (Number(row(s.id).montant) || 0), 0)
@@ -73,6 +84,17 @@ export default function Payments() {
       )}
 
       <p className="muted">Encaissé : <strong>{totalPaye} DA</strong> / Attendu : <strong>{totalDu} DA</strong></p>
+      <div className="row" style={{ marginBottom: 10 }}>
+        <input
+          type="number"
+          min={0}
+          placeholder="Montant par défaut (DA)"
+          value={defaultAmount}
+          onChange={(e) => setDefaultAmount(e.target.value)}
+          style={{ maxWidth: 200 }}
+        />
+        <button className="small" onClick={fillEmptyAmounts}>Remplir les montants vides</button>
+      </div>
       <table>
         <thead><tr><th>Élève</th><th>Montant (DA)</th><th>Statut</th><th>Enregistrer</th></tr></thead>
         <tbody>
