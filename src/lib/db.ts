@@ -196,6 +196,8 @@ export const addGroup = (g: Omit<Group, 'id'>) =>
 export const updateGroup = (g: Group) =>
   void run('UPDATE groups SET nom=?, matiere=?, jour=?, heure=?, capacite=? WHERE id=?', [g.nom, g.matiere, g.jour, g.heure, g.capacite, g.id])
 export const deleteGroup = (id: number) => void run('DELETE FROM groups WHERE id=?', [id])
+export const groupsForWeekday = (jour: string) =>
+  all<Group>("SELECT * FROM groups WHERE jour=? ORDER BY heure", [jour])
 
 // ---------- Eleves ----------
 export const listStudents = (q = '') => {

@@ -9,7 +9,7 @@ import Grades from './components/Grades'
 import Groups from './components/Groups'
 import Payments from './components/Payments'
 import Students from './components/Students'
-import { absentStudentsForDate, countStudents, exportBinary, getDb, importBinary, listStudents, monthISO, paymentsForMonth, recentStudents, todayISO, unpaidCount } from './lib/db'
+import { absentStudentsForDate, countStudents, exportBinary, getDb, groupsForWeekday, importBinary, listStudents, monthISO, paymentsForMonth, recentStudents, todayISO, unpaidCount } from './lib/db'
 import type { TabKey } from './lib/types'
 
 const TABS: { key: TabKey; label: string; Icon: LucideIcon }[] = [
@@ -35,6 +35,7 @@ export default function App() {
   const [backupDismissed, setBackupDismissed] = useState(false)
   const [absentsToday, setAbsentsToday] = useState<{ prenom: string; nom: string }[]>([])
   const [recentList, setRecentList] = useState<{ prenom: string; nom: string }[]>([])
+  const [todayGroups, setTodayGroups] = useState<{ id: number; nom: string; matiere: string; heure: string }[]>([])
 
   useEffect(() => {
     getDb()
@@ -53,6 +54,9 @@ export default function App() {
         setAbsentsToday(absentStudentsForDate(todayISO()))
         // Recent students
         setRecentList(recentStudents(3).map((s) => ({ prenom: s.prenom, nom: s.nom })))
+        // Groups scheduled today
+        const JOURS_SEMAINE = ['Dimanche', 'Lundi', 'Mardi', 'Mercredi', 'Jeudi', 'Vendredi', 'Samedi']
+        setTodayGroups(groupsForWeekday(JOURS_SEMAINE[new Date().getDay()]))
         // Backup reminder
         const last = localStorage.getItem(BACKUP_KEY)
         const lastTime = last ? Number(last) : 0
@@ -122,6 +126,26 @@ export default function App() {
             <div className="cards">
               <div className="stat"><div className="n">{nbEleves}</div><div className="l">Élèves inscrits</div></div>
               <div className="stat"><div className="n">{impayes}</div><div className="l">Impayés ({monthISO()})</div></div>
+            </div>
+            <div className="panel">
+              <h2>Cours d'aujourd'hui</h2>
+              {todayGroups.length === 0 ? (
+                <p className="muted">Aucun cours prévu aujourd'hui.</p>
+              ) : (
+                <div className="today-groups">
+                  {todayGroups.map((g) => (
+                    <div key={g.id} className="today-group-row">
+                      <div className="today-group-info">
+                        <strong>{g.nom}</strong>
+                        <span className="muted">{g.heure || '—'}{g.matiere ? ` · ${g.matiere}` : ''}</span>
+                      </div>
+                      <button className="small primary" onClick={() => setTab('presences')}>
+                        <ListChecks size={14} className="btn-ico" />Faire l'appel
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              )}
             </div>
             <div className="panel">
               <h2>Bienvenue</h2>

@@ -137,6 +137,20 @@ tr.row-saved td { background: #f0fdf4; }
   button.saved { animation: none; }
 }
 
+/* Dashboard — cours d'aujourd'hui */
+.today-groups { display: flex; flex-direction: column; }
+.today-group-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 10px 0;
+  border-bottom: 1px solid var(--line);
+}
+.today-group-row:last-child { border-bottom: none; }
+.today-group-info { display: flex; flex-direction: column; gap: 2px; }
+.today-group-info .muted { font-size: 14px; }
+
 /* Undo delete toast */
 .undo-toast {
   display: flex;
