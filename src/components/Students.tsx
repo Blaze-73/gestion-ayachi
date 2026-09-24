@@ -1,8 +1,9 @@
 import { Check, Pencil, Plus, Printer, Search, Trash2, Undo2, UserPlus, X } from 'lucide-react'
 import { useEffect, useRef, useState } from 'react'
 import {
-  addStudent, deleteStudent, fileToPhotoDataUrl, getStudent,
-  listGroups, listStudents, todayISO, updateStudent,
+  addStudent, attendanceCountForStudent, averageForStudent, deleteStudent,
+  fileToPhotoDataUrl, getStudent, listGroups, listStudents, monthISO,
+  paymentsForMonth, todayISO, updateStudent,
 } from '../lib/db'
 import type { Group, Student } from '../lib/types'
 import DateSelect from './DateSelect'
@@ -18,6 +19,7 @@ export default function Students() {
   const [students, setStudents] = useState<Student[]>([])
   const [groups, setGroups] = useState<Group[]>([])
   const [filterGroupeId, setFilterGroupeId] = useState<number | 'all' | 'none'>('all')
+  const [stats, setStats] = useState<Record<number, { paye: boolean | null; presence: number | null; moyenne: number | null }>>({})
   const [formOpen, setFormOpen] = useState(false)
   const [editing, setEditing] = useState<Student | null>(null)
   const [form, setForm] = useState(EMPTY)
@@ -37,11 +39,24 @@ export default function Students() {
   useEffect(() => () => { if (savedTimer.current) clearTimeout(savedTimer.current); if (undoTimer.current) clearTimeout(undoTimer.current) }, [])
 
   const refresh = () => {
-    setStudents(listStudents(q))
+    const list = listStudents(q)
+    setStudents(list)
     setGroups(listGroups())
+    const mois = monthISO()
+    const payes = new Map(paymentsForMonth(mois).map((p) => [p.student_id, p.statut === 'paye']))
+    const st: Record<number, { paye: boolean | null; presence: number | null; moyenne: number | null }> = {}
+    for (const s of list) {
+      const { total, presents } = attendanceCountForStudent(s.id)
+      st[s.id] = {
+        paye: payes.has(s.id) ? payes.get(s.id)! : null,
+        presence: total > 0 ? Math.round((presents / total) * 100) : null,
+        moyenne: averageForStudent(s.id),
+      }
+    }
+    setStats(st)
   }
   useEffect(refresh, []) // eslint-disable-line react-hooks/exhaustive-deps
-  useEffect(() => { setStudents(listStudents(q)) }, [q])
+  useEffect(refresh, [q]) // eslint-disable-line react-hooks/exhaustive-deps
 
   // Close fiche with Escape
   useEffect(() => {
@@ -313,6 +328,16 @@ export default function Students() {
                     <strong>{s.prenom} {s.nom}</strong>
                     <span className="muted">
                       {groupName(s.groupe_id)}{s.groupe_id ? ' · ' : ''}{s.parent_tel || s.tel || ''}
+                    </span>
+                    <span className="student-badges">
+                      {stats[s.id]?.paye === true && <span className="badge paye">Payé</span>}
+                      {stats[s.id]?.paye === false && <span className="badge impaye">Impayé</span>}
+                      {stats[s.id]?.presence !== null && stats[s.id]?.presence !== undefined && (
+                        <span className="badge neutral">{stats[s.id].presence}% présence</span>
+                      )}
+                      {stats[s.id]?.moyenne !== null && stats[s.id]?.moyenne !== undefined && (
+                        <span className="badge neutral">{stats[s.id].moyenne!.toFixed(1)}/20</span>
+                      )}
                     </span>
                   </div>
                 </div>

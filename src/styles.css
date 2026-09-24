@@ -244,6 +244,8 @@ tr.row-saved td { background: #f0fdf4; }
 .badge { display: inline-block; padding: 3px 10px; border-radius: 20px; font-size: 12px; }
 .badge.paye, .badge.present { background: #dcfce7; color: #15803d; }
 .badge.impaye, .badge.absent { background: #fee2e2; color: #b91c1c; }
+.badge.neutral { background: var(--line); color: var(--muted); }
+.student-badges { display: flex; gap: 6px; flex-wrap: wrap; margin-top: 2px; }
 .muted { color: var(--muted); }
 .loading { padding: 40px; text-align: center; color: var(--muted); }
 
