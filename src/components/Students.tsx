@@ -25,7 +25,9 @@ export default function Students() {
   const [form, setForm] = useState(EMPTY)
   const [ficheId, setFicheId] = useState<number | null>(null)
   const [justSaved, setJustSaved] = useState(false)
+  const [copiedTel, setCopiedTel] = useState('')
   const savedTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const copiedTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
   const searchRef = useRef<HTMLInputElement>(null)
 
   // Undo delete state
@@ -36,7 +38,7 @@ export default function Students() {
   const [dragging, setDragging] = useState(false)
   const dragCounter = useRef(0)
 
-  useEffect(() => () => { if (savedTimer.current) clearTimeout(savedTimer.current); if (undoTimer.current) clearTimeout(undoTimer.current) }, [])
+  useEffect(() => () => { if (savedTimer.current) clearTimeout(savedTimer.current); if (undoTimer.current) clearTimeout(undoTimer.current); if (copiedTimer.current) clearTimeout(copiedTimer.current) }, [])
 
   const refresh = () => {
     const list = listStudents(q)
@@ -98,6 +100,13 @@ export default function Students() {
   }, [formOpen])
 
   const groupName = (id: number | null) => groups.find((g) => g.id === id)?.nom ?? '—'
+
+  const copyTel = (tel: string) => {
+    void navigator.clipboard.writeText(tel)
+    setCopiedTel(tel)
+    if (copiedTimer.current) clearTimeout(copiedTimer.current)
+    copiedTimer.current = setTimeout(() => setCopiedTel(''), 1500)
+  }
 
   const filtered = students.filter((s) => {
     if (filterGroupeId === 'all') return true
@@ -327,7 +336,19 @@ export default function Students() {
                   <div className="student-row-info">
                     <strong>{s.prenom} {s.nom}</strong>
                     <span className="muted">
-                      {groupName(s.groupe_id)}{s.groupe_id ? ' · ' : ''}{s.parent_tel || s.tel || ''}
+                      {groupName(s.groupe_id)}
+                      {(() => {
+                        const tel = s.parent_tel || s.tel
+                        if (!tel) return null
+                        return (
+                          <>
+                            {s.groupe_id ? ' · ' : ''}
+                            <button className="tel-btn" title="Cliquer pour copier" onClick={() => copyTel(tel)}>
+                              {copiedTel === tel ? 'Copié !' : tel}
+                            </button>
+                          </>
+                        )
+                      })()}
                     </span>
                     <span className="student-badges">
                       {stats[s.id]?.paye === true && <span className="badge paye">Payé</span>}

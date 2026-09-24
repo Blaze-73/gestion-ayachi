@@ -252,6 +252,16 @@ tr.row-saved td { background: #f0fdf4; }
 .badge.impaye, .badge.absent { background: #fee2e2; color: #b91c1c; }
 .badge.neutral { background: var(--line); color: var(--muted); }
 .student-badges { display: flex; gap: 6px; flex-wrap: wrap; margin-top: 2px; }
+.tel-btn {
+  background: none;
+  border: none;
+  padding: 0;
+  font: inherit;
+  color: inherit;
+  cursor: pointer;
+  text-decoration: underline dotted;
+}
+.tel-btn:hover { color: var(--primary); }
 .muted { color: var(--muted); }
 .loading { padding: 40px; text-align: center; color: var(--muted); }
 
