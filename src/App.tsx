@@ -139,7 +139,7 @@ export default function App() {
         ))}
       </nav>
 
-      <main>
+      <main key={tab} className="tab-view">
         {tab === 'dashboard' && (
           <>
             <div className="cards">
