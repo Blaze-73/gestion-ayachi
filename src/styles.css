@@ -12,6 +12,16 @@
   --amber: #d97706;
   --radius: 12px;
 }
+:root[data-theme='dark'] {
+  --bg: #0f172a;
+  --card: #1a2439;
+  --ink: #e7ecf5;
+  --muted: #93a0b8;
+  --line: #2c3a55;
+  --primary: #3b82f6;
+  --primary-dark: #2563eb;
+  color-scheme: dark;
+}
 * { box-sizing: border-box; }
 body {
   margin: 0;
@@ -115,15 +125,20 @@ input, select, textarea {
   font-size: 16px;
   border: 1px solid var(--line);
   border-radius: 8px;
-  background: #fff;
+  background: var(--card);
   color: var(--ink);
+}
+input:focus, select:focus, textarea:focus {
+  outline: 2px solid color-mix(in srgb, var(--primary) 45%, transparent);
+  border-color: var(--primary);
 }
 button {
   font-size: 16px;
   padding: 10px 18px;
   border-radius: 10px;
   border: 1px solid var(--line);
-  background: #fff;
+  background: var(--card);
+  color: var(--ink);
   cursor: pointer;
   transition: background 0.15s ease, border-color 0.15s ease, color 0.15s ease, transform 0.1s ease, box-shadow 0.15s ease;
 }
@@ -460,7 +475,7 @@ tr.row-saved td { background: #f0fdf4; }
   z-index: 50;
 }
 .overlay-box {
-  background: #fff;
+  background: var(--card);
   border-radius: 12px;
   padding: 20px;
   max-width: 860px;
@@ -470,8 +485,10 @@ tr.row-saved td { background: #f0fdf4; }
 .overlay-box .fiche { border: none; padding: 8px; max-width: none; }
 
 @media print {
+  /* Toujours imprimer en thème clair, même si l'app est en mode sombre */
+  :root, :root[data-theme='dark'] { --bg: #fff; --card: #fff; --ink: #111; --muted: #555; --line: #ddd; }
   .topbar, .tabs, .no-print { display: none !important; }
-  body { background: #fff; }
+  body { background: #fff; color: #111; }
   main { padding: 0; max-width: none; }
   .panel, .fiche { border: none; margin: 0; padding: 0; }
   .fiche { max-width: none; }

@@ -1,6 +1,6 @@
 import {
   BookOpenText, ClipboardCheck, FolderUp, GraduationCap, Home,
-  ListChecks, NotebookPen, Save, TriangleAlert, UserPlus, Users, Wallet,
+  ListChecks, Moon, NotebookPen, Save, Sun, TriangleAlert, UserPlus, Users, Wallet,
   type LucideIcon,
 } from 'lucide-react'
 import { useEffect, useState } from 'react'
@@ -42,6 +42,16 @@ export default function App() {
   const [presenceRate, setPresenceRate] = useState<number | null>(null)
   const [collected, setCollected] = useState(0)
   const [weekGroups, setWeekGroups] = useState<{ jour: string; nom: string; matiere: string; heure: string }[]>([])
+  const [theme, setTheme] = useState<'light' | 'dark'>(() => {
+    const t = localStorage.getItem('theme') === 'dark' ? 'dark' : 'light'
+    document.documentElement.dataset.theme = t
+    return t
+  })
+
+  useEffect(() => {
+    document.documentElement.dataset.theme = theme
+    localStorage.setItem('theme', theme)
+  }, [theme])
 
   useEffect(() => {
     getDb()
@@ -116,6 +126,14 @@ export default function App() {
           <div className="sub">Suivi des élèves — 100 % hors-ligne, données sur ce PC</div>
         </div>
         <div style={{ marginLeft: 'auto' }} className="row no-print">
+          <button
+            className="small"
+            title={theme === 'dark' ? 'Passer en mode clair' : 'Passer en mode sombre'}
+            aria-label={theme === 'dark' ? 'Mode clair' : 'Mode sombre'}
+            onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
+          >
+            {theme === 'dark' ? <Sun size={15} className="btn-ico" /> : <Moon size={15} className="btn-ico" />}
+          </button>
           <button className="small" onClick={backup}><Save size={15} className="btn-ico" />Sauvegarde</button>
           <label className="small" style={{ border: '1px solid var(--line)', borderRadius: 10, padding: '6px 10px', cursor: 'pointer' }}>
             <FolderUp size={15} className="btn-ico" />Restaurer
