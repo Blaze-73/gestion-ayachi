@@ -1,4 +1,4 @@
-import { Check, Save } from 'lucide-react'
+import { Check, Printer, Save } from 'lucide-react'
 import { useEffect, useRef, useState } from 'react'
 import { distinctPaymentMonths, listStudents, monthISO, paymentsForMonth, setPayment, todayISO } from '../lib/db'
 import type { Student } from '../lib/types'
@@ -56,6 +56,37 @@ export default function Payments() {
     refresh()
   }
 
+  const printSheet = () => {
+    const win = window.open('', '_blank')
+    if (!win) return
+    const lines = visible.map((s) => {
+      const r = row(s.id)
+      const etat = r.statut === 'paye' ? 'Payé' : 'Impayé'
+      return `<tr><td>${s.prenom} ${s.nom}</td><td>${r.montant || '—'}</td><td>${etat}</td><td>${r.statut === 'paye' ? (paymentsForMonth(mois).find((p) => p.student_id === s.id)?.date_paiement || '—') : ''}</td></tr>`
+    }).join('')
+    win.document.write(`<!DOCTYPE html><html lang="fr"><head><meta charset="UTF-8"><title>Paiements — ${mois}</title>
+<style>
+body{font-family:"Segoe UI",sans-serif;padding:30px;color:#111}
+h1{font-size:20px;margin:0 0 4px}h2{font-size:14px;color:#555;margin:0 0 20px;font-weight:normal}
+table{width:100%;border-collapse:collapse}
+th,td{border:1px solid #ccc;padding:8px 10px;text-align:left;font-size:13px}
+th{background:#f3f4f6;font-weight:600}
+.totals{margin-top:16px;display:flex;gap:30px;font-size:14px;font-weight:600}
+@media print{body{padding:15px}}
+</style></head><body>
+<h1>Fiche de paiements — ${mois}</h1>
+<h2>Gestion Ayachi — ${visible.length} élève(s)</h2>
+<table><thead><tr><th>Élève</th><th>Montant (DA)</th><th>Statut</th><th>Date</th></tr></thead>
+<tbody>${lines}</tbody></table>
+<div class="totals"><span>Encaissé : ${totalPaye} DA</span><span>Attendu : ${totalDu} DA</span></div>
+<div style="margin-top:30px;display:flex;justify-content:space-between;font-size:12px;color:#555">
+<span>Signature : ________________</span>
+</div>
+</body></html>`)
+    win.document.close()
+    win.print()
+  }
+
   const visible = onlyUnpaid ? students.filter((s) => row(s.id).statut !== 'paye') : students
 
   const totalDu = visible.reduce((t, s) => t + (Number(row(s.id).montant) || 0), 0)
@@ -68,6 +99,7 @@ export default function Payments() {
         <div className="row">
           <div><label>Mois</label><input type="month" value={mois} onChange={(e) => setMois(e.target.value)} /></div>
           <button className={onlyUnpaid ? 'small primary' : 'small'} onClick={() => setOnlyUnpaid(!onlyUnpaid)}>Impayés uniquement</button>
+          <button className="small" onClick={printSheet}><Printer size={14} className="btn-ico" />Imprimer la fiche</button>
           <button className="small" onClick={() => setShowHistory(!showHistory)}>{showHistory ? 'Masquer' : 'Historique'}</button>
         </div>
       </div>
