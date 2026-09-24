@@ -9,7 +9,9 @@ import Grades from './components/Grades'
 import Groups from './components/Groups'
 import Payments from './components/Payments'
 import Students from './components/Students'
+import ToastHost from './components/ToastHost'
 import { absentStudentsForDate, attendanceRateForMonth, countStudents, exportBinary, getDb, groupsForWeekday, importBinary, listGroups, listStudents, monthISO, paidTotalForMonth, paymentsForMonth, recentStudents, todayISO, unpaidCount } from './lib/db'
+import { confirmDialog } from './lib/toast'
 import type { TabKey } from './lib/types'
 
 const TABS: { key: TabKey; label: string; Icon: LucideIcon }[] = [
@@ -100,7 +102,7 @@ export default function App() {
 
   const restore = async (f: File | undefined) => {
     if (!f) return
-    if (!confirm('Restaurer cette sauvegarde ? Les données actuelles seront remplacées.')) return
+    if (!(await confirmDialog('Restaurer cette sauvegarde ? Les données actuelles seront remplacées.'))) return
     await importBinary(new Uint8Array(await f.arrayBuffer()))
     location.reload()
   }
@@ -225,6 +227,7 @@ export default function App() {
         {tab === 'paiements' && <Payments />}
         {tab === 'notes' && <Grades />}
       </main>
+      <ToastHost />
     </>
   )
 }

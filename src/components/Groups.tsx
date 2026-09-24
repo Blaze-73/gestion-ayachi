@@ -1,6 +1,7 @@
 import { Pencil, Plus, Trash2 } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import { addGroup, deleteGroup, listGroups, studentsByGroup, updateGroup } from '../lib/db'
+import { confirmDialog, toast } from '../lib/toast'
 import type { Group } from '../lib/types'
 
 const JOURS = ['Samedi', 'Dimanche', 'Lundi', 'Mardi', 'Mercredi', 'Jeudi', 'Vendredi']
@@ -26,7 +27,7 @@ export default function Groups() {
   useEffect(refresh, [])
 
   const save = () => {
-    if (!nom.trim()) { alert('Nom du groupe obligatoire.'); return }
+    if (!nom.trim()) { toast('Nom du groupe obligatoire.', 'error'); return }
     if (editing) updateGroup({ ...editing, nom, matiere, jour, heure, capacite })
     else addGroup({ nom, matiere, jour, heure, capacite })
     setNom(''); setMatiere('Français'); setHeure(''); setCapacite(0); setEditing(null); refresh()
@@ -34,6 +35,12 @@ export default function Groups() {
 
   const resetForm = () => {
     setEditing(null); setNom(''); setMatiere('Français'); setHeure(''); setCapacite(0)
+  }
+
+  const remove = async (g: Group) => {
+    if (!(await confirmDialog(`Supprimer ${g.nom} ?`))) return
+    deleteGroup(g.id)
+    refresh()
   }
 
   return (
@@ -73,7 +80,7 @@ export default function Groups() {
                 <td>
                   <div className="row">
                     <button className="small" onClick={() => { setEditing(g); setNom(g.nom); setMatiere(g.matiere); setJour(g.jour || 'Samedi'); setHeure(g.heure); setCapacite(g.capacite || 0) }}><Pencil size={14} className="btn-ico" />Modifier</button>
-                    <button className="small danger" onClick={() => { if (confirm(`Supprimer ${g.nom} ?`)) { deleteGroup(g.id); refresh() } }}><Trash2 size={14} className="btn-ico" />Supprimer</button>
+                    <button className="small danger" onClick={() => void remove(g)}><Trash2 size={14} className="btn-ico" />Supprimer</button>
                   </div>
                 </td>
               </tr>

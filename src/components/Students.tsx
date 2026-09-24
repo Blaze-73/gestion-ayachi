@@ -5,6 +5,7 @@ import {
   fileToPhotoDataUrl, getStudent, listGroups, listStudents, monthISO,
   paymentsForMonth, todayISO, updateStudent,
 } from '../lib/db'
+import { confirmDialog, toast } from '../lib/toast'
 import type { Group, Student } from '../lib/types'
 import DateSelect from './DateSelect'
 import FicheEleve from './FicheEleve'
@@ -123,7 +124,7 @@ export default function Students() {
   }
 
   const save = () => {
-    if (!form.nom.trim()) { alert('Le nom est obligatoire.'); return }
+    if (!form.nom.trim()) { toast('Le nom est obligatoire.', 'error'); return }
     if (editing) updateStudent({ ...form, id: editing.id })
     else addStudent(form)
     closeForm()
@@ -156,8 +157,8 @@ export default function Students() {
     setForm(EMPTY)
   }
 
-  const remove = (s: Student) => {
-    if (!confirm(`Supprimer ${s.prenom} ${s.nom} ?`)) return
+  const remove = async (s: Student) => {
+    if (!(await confirmDialog(`Supprimer ${s.prenom} ${s.nom} ?`))) return
     deleteStudent(s.id)
     refresh()
     setDeletedStudent(s)

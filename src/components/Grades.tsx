@@ -1,6 +1,7 @@
 import { CheckCheck, Plus, Trash2 } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import { addGrade, averageForStudent, deleteGrade, gradesForStudent, listGroups, listStudents, studentsByGroup, todayISO } from '../lib/db'
+import { confirmDialog, toast } from '../lib/toast'
 import type { GradeRow, Group, Student } from '../lib/types'
 
 export default function Grades() {
@@ -47,16 +48,16 @@ export default function Grades() {
 
   const save = () => {
     if (studentId === '') return
-    if (!evaluation.trim() || note === '') { alert('Évaluation et note obligatoires.'); return }
+    if (!evaluation.trim() || note === '') { toast('Évaluation et note obligatoires.', 'error'); return }
     addGrade({ student_id: Number(studentId), evaluation, note: Number(note), date })
     setEvaluation(''); setNote(''); refresh(Number(studentId))
   }
 
-  const saveGroup = () => {
-    if (!groupEval.trim()) { alert("Nom de l'évaluation obligatoire."); return }
+  const saveGroup = async () => {
+    if (!groupEval.trim()) { toast("Nom de l'évaluation obligatoire.", 'error'); return }
     const filled = groupStudents.filter((s) => groupNotes[s.id] !== '' && !Number.isNaN(Number(groupNotes[s.id])))
-    if (filled.length === 0) { alert('Entrez au moins une note.'); return }
-    if (!confirm(`Enregistrer ${filled.length} note(s) pour « ${groupEval} » ?`)) return
+    if (filled.length === 0) { toast('Entrez au moins une note.', 'error'); return }
+    if (!(await confirmDialog(`Enregistrer ${filled.length} note(s) pour « ${groupEval} » ?`))) return
     for (const s of filled) {
       addGrade({ student_id: s.id, evaluation: groupEval, note: Number(groupNotes[s.id]), date: groupDate })
     }

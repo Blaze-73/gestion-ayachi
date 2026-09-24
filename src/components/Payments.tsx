@@ -1,6 +1,7 @@
 import { Check, Printer, Save } from 'lucide-react'
 import { useEffect, useRef, useState } from 'react'
 import { distinctPaymentMonths, listStudents, monthISO, paymentsForMonth, setPayment, todayISO } from '../lib/db'
+import { toast } from '../lib/toast'
 import type { Student } from '../lib/types'
 
 export default function Payments() {
@@ -48,9 +49,9 @@ export default function Payments() {
 
   const fillEmptyAmounts = () => {
     const amount = Number(defaultAmount)
-    if (!amount || amount <= 0) { alert('Entrez un montant valide.'); return }
+    if (!amount || amount <= 0) { toast('Entrez un montant valide.', 'error'); return }
     const targets = students.filter((s) => !(Number(row(s.id).montant) > 0))
-    if (targets.length === 0) { alert('Tous les montants sont déjà remplis.'); return }
+    if (targets.length === 0) { toast('Tous les montants sont déjà remplis.', 'info'); return }
     for (const s of targets) setPayment(s.id, mois, amount, row(s.id).statut, row(s.id).statut === 'paye' ? todayISO() : '')
     setDefaultAmount('')
     refresh()
