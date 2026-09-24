@@ -219,6 +219,12 @@ tr.row-saved td { background: #f0fdf4; }
   border-bottom: 1px solid var(--line);
 }
 
+/* Attendance — last sessions dots */
+.history-dots { display: inline-flex; gap: 5px; }
+.hist-dot { font-size: 13px; line-height: 1; }
+.hist-dot.present { color: var(--green); }
+.hist-dot.absent { color: var(--red); }
+
 /* Attendance quick-toggle name button */
 .student-name-btn {
   background: none;

@@ -1,7 +1,7 @@
 import { Check, CheckCheck, Printer, X } from 'lucide-react'
 import { useEffect, useState } from 'react'
-import { attendanceForDate, listGroups, markAttendance, studentsByGroup, todayISO } from '../lib/db'
-import type { Group, Student } from '../lib/types'
+import { attendanceForDate, attendanceForStudent, listGroups, markAttendance, studentsByGroup, todayISO } from '../lib/db'
+import type { AttendanceRow, Group, Student } from '../lib/types'
 
 export default function Attendance({ initialGroupId }: { initialGroupId?: number | null } = {}) {
   const [groups, setGroups] = useState<Group[]>([])
@@ -9,16 +9,21 @@ export default function Attendance({ initialGroupId }: { initialGroupId?: number
   const [date, setDate] = useState(todayISO())
   const [students, setStudents] = useState<Student[]>([])
   const [marks, setMarks] = useState<Record<number, 'present' | 'absent'>>({})
+  const [history, setHistory] = useState<Record<number, AttendanceRow[]>>({})
 
   useEffect(() => { setGroups(listGroups()) }, [])
 
   useEffect(() => {
-    if (groupeId === '') { setStudents([]); return }
-    setStudents(studentsByGroup(Number(groupeId)))
+    if (groupeId === '') { setStudents([]); setHistory({}); return }
+    const list = studentsByGroup(Number(groupeId))
+    setStudents(list)
     const rows = attendanceForDate(date)
     const m: Record<number, 'present' | 'absent'> = {}
     for (const r of rows) m[r.student_id] = r.statut
     setMarks(m)
+    const h: Record<number, AttendanceRow[]> = {}
+    for (const s of list) h[s.id] = attendanceForStudent(s.id).filter((r) => r.date !== date).slice(0, 4)
+    setHistory(h)
   }, [groupeId, date])
 
   const mark = (id: number, s: 'present' | 'absent') => {
@@ -98,7 +103,7 @@ th{background:#f3f4f6;font-weight:600}
         <p className="muted">Présents : <strong>{presents}</strong> — Absents : <strong>{absents}</strong> — Non marqués : <strong>{students.length - presents - absents}</strong></p>
       )}
       <table>
-        <thead><tr><th>Élève</th><th>Statut</th><th>Tap name to toggle</th></tr></thead>
+        <thead><tr><th>Élève</th><th>Statut</th><th>4 dernières séances</th><th>Tap name to toggle</th></tr></thead>
         <tbody>
           {students.map((s) => (
             <tr key={s.id}>
@@ -110,6 +115,15 @@ th{background:#f3f4f6;font-weight:600}
               <td>
                 {marks[s.id] ? <span className={`badge ${marks[s.id]}`}>{marks[s.id] === 'present' ? 'Présent' : 'Absent'}</span>
                   : <span className="muted">—</span>}
+              </td>
+              <td>
+                <span className="history-dots">
+                  {(history[s.id] ?? []).length === 0
+                    ? <span className="muted">—</span>
+                    : (history[s.id] ?? []).map((r) => (
+                      <span key={r.id} title={`${r.date} — ${r.statut === 'present' ? 'présent' : 'absent'}`} className={`hist-dot ${r.statut}`}>●</span>
+                    ))}
+                </span>
               </td>
               <td>
                 <div className="row">
