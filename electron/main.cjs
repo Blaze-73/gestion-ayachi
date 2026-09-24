@@ -10,8 +10,11 @@ const dbPath = () => path.join(app.getPath('userData'), DB_NAME)
 const isDev = !app.isPackaged
 
 function createWindow() {
+  const appIcon = path.join(__dirname, '..', 'build', 'icon.png')
   const win = new BrowserWindow({
     title: 'Gestion Ayachi — Suivi des élèves',
+    icon: fs.existsSync(appIcon) ? appIcon : undefined,
+    backgroundColor: '#f4f6fb',
     width: 1200,
     height: 800,
     minWidth: 900,

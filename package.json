@@ -12,6 +12,7 @@
     "lint": "oxlint",
     "preview": "vite preview",
     "electron:dev": "electron .",
+    "icon": "node scripts/gen-icon.mjs",
     "dist": "npm run build && electron-builder --win portable nsis"
   },
   "dependencies": {
@@ -41,6 +42,7 @@
       "package.json"
     ],
     "win": {
+      "icon": "build/icon.ico",
       "target": [
         "portable",
         "nsis"
