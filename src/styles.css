@@ -345,6 +345,61 @@ tr.row-saved td { background: #f0fdf4; }
 .muted { color: var(--muted); }
 .loading { padding: 40px; text-align: center; color: var(--muted); }
 
+/* ---------- Assistant première utilisation ---------- */
+.onboarding {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+}
+.onboarding-card {
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  padding: 32px;
+  max-width: 540px;
+  width: 100%;
+  box-shadow: 0 20px 60px rgba(15, 23, 42, 0.12);
+  animation: tab-in 0.3s ease;
+}
+.onboarding-card h2 { margin: 14px 0 6px; font-size: 22px; }
+.onboarding-card .grid2 { margin-bottom: 4px; }
+.onboarding-steps { display: flex; gap: 6px; margin-bottom: 18px; }
+.step-dot {
+  width: 26px;
+  height: 6px;
+  border-radius: 3px;
+  background: var(--line);
+  transition: background 0.2s ease;
+}
+.step-dot.on { background: var(--primary); }
+.onboarding-list {
+  list-style: none;
+  padding: 0;
+  margin: 18px 0 0;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.onboarding-list li {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 15px;
+}
+.onboarding-list li .btn-ico { color: var(--primary); }
+.onboarding-check {
+  width: 76px;
+  height: 76px;
+  border-radius: 50%;
+  background: var(--green);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  animation: save-pop 0.4s ease;
+}
+
 /* ---------- Students page ---------- */
 .group-pills {
   display: flex;

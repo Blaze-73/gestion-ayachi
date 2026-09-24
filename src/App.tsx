@@ -7,6 +7,7 @@ import { useEffect, useState } from 'react'
 import Attendance from './components/Attendance'
 import Grades from './components/Grades'
 import Groups from './components/Groups'
+import Onboarding from './components/Onboarding'
 import Payments from './components/Payments'
 import Students from './components/Students'
 import ToastHost from './components/ToastHost'
@@ -42,6 +43,8 @@ export default function App() {
   const [presenceRate, setPresenceRate] = useState<number | null>(null)
   const [collected, setCollected] = useState(0)
   const [weekGroups, setWeekGroups] = useState<{ jour: string; nom: string; matiere: string; heure: string }[]>([])
+  const [onboarding, setOnboarding] = useState(false)
+  const [refreshKey, setRefreshKey] = useState(0)
   const [theme, setTheme] = useState<'light' | 'dark'>(() => {
     const t = localStorage.getItem('theme') === 'dark' ? 'dark' : 'light'
     document.documentElement.dataset.theme = t
@@ -57,6 +60,12 @@ export default function App() {
     getDb()
       .then(() => {
         setReady(true)
+        // Assistant de première utilisation : base vide + jamais terminé
+        setOnboarding(
+          localStorage.getItem('onboarding-done') !== '1'
+          && countStudents() === 0
+          && listGroups().length === 0,
+        )
         setNbEleves(countStudents())
         const m = monthISO()
         setImpayes(unpaidCount(m))
@@ -93,10 +102,17 @@ export default function App() {
       })
       .catch((e) => setError(String(e)))
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [tab])
+  }, [tab, refreshKey])
+
+  const finishOnboarding = () => {
+    localStorage.setItem('onboarding-done', '1')
+    setOnboarding(false)
+    setRefreshKey((k) => k + 1)
+  }
 
   if (error) return <div className="loading">Erreur : {error}</div>
   if (!ready) return <div className="loading">Chargement de la base locale…</div>
+  if (onboarding) return (<><Onboarding onDone={finishOnboarding} /><ToastHost /></>)
 
   const backup = () => {
     const data = exportBinary()
