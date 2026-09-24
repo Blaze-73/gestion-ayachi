@@ -9,7 +9,7 @@ import Grades from './components/Grades'
 import Groups from './components/Groups'
 import Payments from './components/Payments'
 import Students from './components/Students'
-import { absentStudentsForDate, countStudents, exportBinary, getDb, groupsForWeekday, importBinary, listStudents, monthISO, paymentsForMonth, recentStudents, todayISO, unpaidCount } from './lib/db'
+import { absentStudentsForDate, attendanceRateForMonth, countStudents, exportBinary, getDb, groupsForWeekday, importBinary, listGroups, listStudents, monthISO, paidTotalForMonth, paymentsForMonth, recentStudents, todayISO, unpaidCount } from './lib/db'
 import type { TabKey } from './lib/types'
 
 const TABS: { key: TabKey; label: string; Icon: LucideIcon }[] = [
@@ -37,6 +37,9 @@ export default function App() {
   const [recentList, setRecentList] = useState<{ prenom: string; nom: string }[]>([])
   const [todayGroups, setTodayGroups] = useState<{ id: number; nom: string; matiere: string; heure: string }[]>([])
   const [attendanceGroupId, setAttendanceGroupId] = useState<number | null>(null)
+  const [presenceRate, setPresenceRate] = useState<number | null>(null)
+  const [collected, setCollected] = useState(0)
+  const [weekGroups, setWeekGroups] = useState<{ jour: string; nom: string; matiere: string; heure: string }[]>([])
 
   useEffect(() => {
     getDb()
@@ -58,6 +61,19 @@ export default function App() {
         // Groups scheduled today
         const JOURS_SEMAINE = ['Dimanche', 'Lundi', 'Mardi', 'Mercredi', 'Jeudi', 'Vendredi', 'Samedi']
         setTodayGroups(groupsForWeekday(JOURS_SEMAINE[new Date().getDay()]))
+        // Presence rate + collected this month
+        const rate = attendanceRateForMonth(m)
+        setPresenceRate(rate.total > 0 ? Math.round((rate.presents / rate.total) * 100) : null)
+        setCollected(paidTotalForMonth(m))
+        // Week schedule
+        const ORDER = ['Samedi', 'Dimanche', 'Lundi', 'Mardi', 'Mercredi', 'Jeudi', 'Vendredi']
+        const dayIdx = (j: string) => { const i = ORDER.indexOf(j); return i === -1 ? 99 : i }
+        setWeekGroups(
+          listGroups()
+            .slice()
+            .sort((a, b) => dayIdx(a.jour) - dayIdx(b.jour) || a.heure.localeCompare(b.heure))
+            .map((g) => ({ jour: g.jour, nom: g.nom, matiere: g.matiere, heure: g.heure })),
+        )
         // Backup reminder
         const last = localStorage.getItem(BACKUP_KEY)
         const lastTime = last ? Number(last) : 0
@@ -127,6 +143,14 @@ export default function App() {
             <div className="cards">
               <div className="stat"><div className="n">{nbEleves}</div><div className="l">Élèves inscrits</div></div>
               <div className="stat"><div className="n">{impayes}</div><div className="l">Impayés ({monthISO()})</div></div>
+              <div className="stat">
+                <div className="n">{presenceRate !== null ? `${presenceRate}%` : '—'}</div>
+                <div className="l">Présence ({monthISO()})</div>
+              </div>
+              <div className="stat">
+                <div className="n">{collected} DA</div>
+                <div className="l">Encaissé ({monthISO()})</div>
+              </div>
             </div>
             <div className="panel">
               <h2>Cours d'aujourd'hui</h2>
@@ -148,6 +172,21 @@ export default function App() {
                 </div>
               )}
             </div>
+            {weekGroups.length > 0 && (
+              <div className="panel">
+                <h2>Emploi de la semaine</h2>
+                <div className="today-groups">
+                  {weekGroups.map((g, i) => (
+                    <div key={i} className="today-group-row">
+                      <div className="today-group-info">
+                        <strong>{g.nom}</strong>
+                        <span className="muted">{g.jour} {g.heure || '—'}{g.matiere ? ` · ${g.matiere}` : ''}</span>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
             <div className="panel">
               <h2>Bienvenue</h2>
               <p className="muted">

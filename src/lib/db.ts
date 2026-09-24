@@ -247,6 +247,14 @@ export const absentStudentsForDate = (date: string) =>
   )
 export const recentStudents = (limit: number) =>
   all<Student>('SELECT * FROM students ORDER BY id DESC LIMIT ?', [limit])
+/** Taux de présence sur un mois (YYYY-MM) : présents / total marqué. */
+export const attendanceRateForMonth = (mois: string) => {
+  const r = all<{ total: number; presents: number }>(
+    "SELECT COUNT(*) AS total, SUM(CASE WHEN statut='present' THEN 1 ELSE 0 END) AS presents FROM attendance WHERE date LIKE ?",
+    [`${mois}%`],
+  )[0]
+  return { total: r?.total ?? 0, presents: r?.presents ?? 0 }
+}
 
 // ---------- Paiements ----------
 export const paymentsForMonth = (mois: string) =>
@@ -262,6 +270,8 @@ export const unpaidCount = (mois: string) =>
   all<{ n: number }>("SELECT COUNT(*) AS n FROM payments WHERE mois=? AND statut='impaye'", [mois])[0]?.n ?? 0
 export const distinctPaymentMonths = () =>
   all<{ mois: string }>('SELECT DISTINCT mois FROM payments ORDER BY mois DESC')
+export const paidTotalForMonth = (mois: string) =>
+  all<{ t: number }>("SELECT COALESCE(SUM(montant),0) AS t FROM payments WHERE mois=? AND statut='paye'", [mois])[0]?.t ?? 0
 
 // ---------- Notes ----------
 export const gradesForStudent = (studentId: number) =>
